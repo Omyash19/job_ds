@@ -3,9 +3,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 import plotly.express as px
 
-# 1. PAGE CONFIG (Force Sidebar Collapsed)
+# 1. PAGE CONFIG (Zero-Sidebar Immersive Mode)
 st.set_page_config(
-    page_title="ECHOES | Tech Job Intelligence", 
+    page_title="ECHOES | Global Tech Intelligence", 
     page_icon="💎", 
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -19,40 +19,99 @@ COUNTRY_MAP = {
     "mx": "Mexico", "nl": "Netherlands", "nz": "New Zealand", "pl": "Poland", 
     "sg": "Singapore", "us": "United States", "za": "South Africa"
 }
+COUNTRY_FLAGS = {
+    "au": "🇦🇺", "br": "🇧🇷", "ca": "🇨🇦", "fr": "🇫🇷", "de": "🇩🇪", "in": "🇮🇳", 
+    "ie": "🇮🇪", "nl": "🇳🇱", "pl": "🇵🇱", "sg": "🇸🇬", "us": "🇺🇸", "gb": "🇬🇧"
+}
 TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer", "DevOps Engineer"]
 SKILL_KEYWORDS = ["Python", "SQL", "AWS", "Azure", "Docker", "Kubernetes", "Spark", "React", "Tableau", "Snowflake", "Java"]
 
-# 3. ELITE GLASSMORPHIC CSS
+# 3. HIGH-END GLASSMORPHISM CSS
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
-    .main { background: radial-gradient(circle at top right, #1e1b4b, #020617); }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
-    /* Hiding the sidebar completely via CSS */
+    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+    
+    /* Light Airy Background */
+    .main { background: #f8fafc; }
+    
+    /* Completely Hide Sidebar */
     [data-testid="stSidebar"] { display: none; }
-    [data-testid="stSidebarNav"] { display: none; }
 
-    /* Landing Hero */
-    .hero-title { text-align: center; color: white; font-weight: 800; font-size: 4.5rem; margin-top: 100px; margin-bottom: 10px; }
-    .hero-subtitle { text-align: center; color: #818cf8; font-size: 1.3rem; margin-bottom: 60px; font-weight: 400; }
+    /* Hero Branding */
+    .hero-title { text-align: center; color: #0f172a; font-weight: 800; font-size: 3.5rem; margin-top: 60px; }
+    .hero-subtitle { text-align: center; color: #6366f1; font-size: 1.1rem; margin-bottom: 50px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
     
-    /* Centered Configuration Box */
+    /* Config Box (Glassmorphic) */
     .config-box {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 50px;
-        border-radius: 30px;
-        max-width: 800px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 40px;
+        border-radius: 32px;
+        max-width: 900px;
         margin: 0 auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
     }
 
-    /* Job Match Cards */
-    .job-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 24px; margin-bottom: 25px; }
-    .top-match-card { border: 1px solid rgba(99, 102, 241, 0.6) !important; background: rgba(99, 102, 241, 0.08) !important; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2); }
+    /* KPI Cards (Glassmorphic) */
+    div[data-testid="stMetric"] {
+        background: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        padding: 25px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    div[data-testid="stMetricValue"] { color: #0f172a !important; font-weight: 800 !important; }
+    div[data-testid="stMetricLabel"] { color: #64748b !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.8rem; }
+
+    /* Horizontal Glass Job Card */
+    .job-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 25px 35px;
+        border-radius: 28px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.02);
+    }
+    .job-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
     
-    .desc-text { color: #9ca3af; font-size: 1.1rem; line-height: 1.7; margin-bottom: 50px; padding: 20px; border-left: 4px solid #6366f1; background: rgba(255,255,255,0.02); border-radius: 0 15px 15px 0; }
+    .match-tag {
+        background: #f1f5f9;
+        color: #6366f1;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+
+    /* Premium Purple Button */
+    .apply-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white !important;
+        padding: 12px 28px;
+        border-radius: 16px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        transition: opacity 0.2s;
+    }
+    .apply-btn:hover { opacity: 0.9; }
+
+    .desc-box { color: #475569; font-size: 1rem; line-height: 1.7; padding: 25px; background: white; border-radius: 20px; margin-bottom: 40px; border: 1px solid #f1f5f9; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -65,7 +124,7 @@ def load_data():
     df['salary_min'] = pd.to_numeric(df['salary_min'], errors='coerce').fillna(0)
     df['salary_max'] = pd.to_numeric(df['salary_max'], errors='coerce').fillna(0)
     df['country_code'] = df['country'].str.lower()
-    df['country'] = df['country_code'].map(COUNTRY_MAP).fillna(df['country_code'].str.upper())
+    df['country_name'] = df['country_code'].map(COUNTRY_MAP).fillna(df['country_code'].str.upper())
     return df
 
 try:
@@ -77,146 +136,109 @@ except:
 if 'page' not in st.session_state: st.session_state.page = "landing"
 if 'filters' not in st.session_state: st.session_state.filters = {}
 
-def set_page(page_name):
-    st.session_state.page = page_name
-
-# 6. APP FLOW
+# 6. APP CONTENT
 if not raw_df.empty:
     
-    # ─── STAGE 1: LANDING PAGE ───
+    # ─── VIEW 1: LANDING ───
     if st.session_state.page == "landing":
         st.markdown('<h1 class="hero-title">ECHOES 💎</h1>', unsafe_allow_html=True)
-        st.markdown('<p class="hero-subtitle">The Intelligence Layer for the Global Tech Economy</p>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-subtitle">Intelligence for the Tech Economy</p>', unsafe_allow_html=True)
         
         c_l, c1, c2, c_r = st.columns([1, 2, 2, 1])
         with c1:
             if st.button("🔍 Launch Job Explorer", use_container_width=True, type="primary"):
-                set_page("config_explorer")
-                st.rerun()
+                st.session_state.page = "config_explorer"; st.rerun()
         with c2:
-            if st.button("📊 Launch Market Intelligence", use_container_width=True):
-                set_page("config_analytics")
-                st.rerun()
+            if st.button("📊 Market Intelligence", use_container_width=True):
+                st.session_state.page = "config_analytics"; st.rerun()
 
-    # ─── STAGE 2: CONFIGURATION (Centralized Filtering) ───
+    # ─── VIEW 2: CONFIG ───
     elif st.session_state.page in ["config_explorer", "config_analytics"]:
-        st.markdown(f'<h1 style="text-align:center; color:white; margin-top:50px;">Configure Your Insight</h1>', unsafe_allow_html=True)
-        
+        st.markdown('<h2 style="text-align:center; margin-top:50px;">Configure Your Insight</h2>', unsafe_allow_html=True)
         with st.container():
             st.markdown('<div class="config-box">', unsafe_allow_html=True)
-            
-            # Form-like Interface in Main View
-            available_countries = sorted(raw_df['country'].unique().tolist())
             col_a, col_b = st.columns(2)
-            
             with col_a:
-                sel_regions = st.multiselect("Select Regions", available_countries, default=available_countries[:1])
+                sel_regions = st.multiselect("Select Regions", sorted(raw_df['country_name'].unique().tolist()), default=[raw_df['country_name'].unique().tolist()[0]])
             with col_b:
                 sel_currency = st.radio("Display Currency", ["USD", "INR"], horizontal=True)
             
-            # Role selection only for Explorer
             sel_role = "All Roles"
             if st.session_state.page == "config_explorer":
                 sel_role = st.selectbox("Define Your Target Tech Stack", TECH_ROLES)
             
-            st.write("---")
-            btn_label = "Generate Market Report" if st.session_state.page == "config_analytics" else "Search Live Market"
-            
-            c_bl, c_bc, c_br = st.columns([1, 2, 1])
-            with c_bc:
-                if st.button(btn_label, use_container_width=True, type="primary"):
-                    st.session_state.filters = {
-                        "regions": sel_regions,
-                        "currency": sel_currency,
-                        "role": sel_role,
-                        "rate": 83.5 if sel_currency == "INR" else 1.0
-                    }
-                    next_view = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
-                    set_page(next_view)
-                    st.rerun()
-            
-            if st.button("← Cancel", use_container_width=False):
-                set_page("landing")
+            st.divider()
+            if st.button("Generate Experience", use_container_width=True, type="primary"):
+                st.session_state.filters = {"regions": sel_regions, "currency": sel_currency, "role": sel_role, "rate": 83.5 if sel_currency == "INR" else 1.0}
+                st.session_state.page = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
                 st.rerun()
-                
+            if st.button("← Cancel"): st.session_state.page = "landing"; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # ─── STAGE 3: RESULTS (Explorer) ───
+    # ─── VIEW 3: RESULTS (Explorer) ───
     elif st.session_state.page == "results_explorer":
         f = st.session_state.filters
-        st.markdown(f"## 🔍 Explorer: {f['role']} in {', '.join(f['regions'])}")
-        
-        if st.button("🔄 Adjust Filters"): set_page("config_explorer"); st.rerun()
-        
-        # Filtering logic
-        res_df = raw_df[raw_df['country'].isin(f['regions'])]
+        st.markdown(f"### 🔍 Explorer: {f['role']} in {', '.join(f['regions'])}")
+        if st.button("Adjust Filters", type="secondary"): st.session_state.page = "config_explorer"; st.rerun()
+
+        res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         if f['role'] != "All Roles":
             res_df = res_df[res_df['title'].str.contains(f['role'], case=False)]
         
         if not res_df.empty:
-            # Show Top 3 Recommendations
-            st.markdown("### ✨ Premium Matches")
+            st.markdown("#### ✨ Premium Matches")
             top_3 = res_df.sort_values(by='salary_max', ascending=False).head(3)
             for _, row in top_3.iterrows():
-                sal = f"{row['salary_min']*f['rate']:,.0f} - {row['salary_max']*f['rate']:,.0f} {f['currency']}" if row['salary_min'] > 0 else "Competitive"
+                flag = COUNTRY_FLAGS.get(row['country_code'], "📍")
+                sal = f"{row['salary_min']*f['rate']:,.0f} - {row['salary_max']*f['rate']:,.0f} {f['currency']}" if row['salary_min'] > 0 else "Not Disclosed"
                 st.markdown(f"""
-                    <div class="job-card top-match-card">
-                        <a href="{row['url']}" target="_blank" style="float:right; background:#6366f1; color:white; padding:12px 24px; border-radius:14px; font-weight:700; text-decoration:none;">Apply Now</a>
-                        <h2 style="margin-top:0;">{row['title']}</h2>
-                        <p style="color: #818cf8; font-size:1.1rem; font-weight:600;">{row['company']} • 📍 {row['location']} ({row['country']})</p>
-                        <p style="color: #9ca3af; font-size: 0.95rem;">💰 <b>Benchmark Salary:</b> {sal}</p>
+                    <div class="job-card">
+                        <div style="flex:1;">
+                            <h2 style="margin:0; font-size:1.6rem;">{row['title']} <span class="match-tag">TOP MATCH</span></h2>
+                            <p style="color: #6366f1; font-weight: 700; margin: 8px 0;">{row['company']} • {flag} {row['location']} ({row['country_name']})</p>
+                            <p style="color: #64748b; font-size: 0.9rem;">💰 <b>Benchmark Salary:</b> {sal}</p>
+                        </div>
+                        <a href="{row['url']}" target="_blank" class="apply-btn">Apply Now</a>
                     </div>
                 """, unsafe_allow_html=True)
             
             st.divider()
-            st.markdown(f"### Additional {f['role']} Openings")
+            st.markdown(f"#### Global Tech Hub Opportunities")
             for _, row in res_df.iloc[3:].iterrows():
+                flag = COUNTRY_FLAGS.get(row['country_code'], "📍")
                 st.markdown(f"""
-                    <div class="job-card">
-                        <a href="{row['url']}" target="_blank" style="float:right; background:rgba(255,255,255,0.08); color:white; padding:10px 20px; border-radius:10px; text-decoration:none;">Apply</a>
-                        <h3>{row['title']}</h3>
-                        <p style="color: #818cf8;">{row['company']} • 📍 {row['location']} ({row['country']})</p>
+                    <div class="job-card" style="padding: 20px 30px;">
+                        <div style="flex:1;">
+                            <h3 style="margin:0;">{row['title']}</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">{row['company']} • {flag} {row['location']}</p>
+                        </div>
+                        <a href="{row['url']}" target="_blank" class="apply-btn" style="padding:8px 20px; font-size:12px;">View Role</a>
                     </div>
                 """, unsafe_allow_html=True)
         else:
-            st.warning("No live records found for this configuration.")
+            st.warning("Scanning... No matches currently found.")
 
-    # ─── STAGE 3: RESULTS (Analytics) ───
+    # ─── VIEW 3: RESULTS (Analytics) ───
     elif st.session_state.page == "results_analytics":
         f = st.session_state.filters
-        st.markdown(f"## 📊 Intelligence Report: {', '.join(f['regions'])}")
-        if st.button("🔄 Adjust Parameters"): set_page("config_analytics"); st.rerun()
+        st.markdown(f"### 📊 Intelligence Report: {', '.join(f['regions'])}")
+        if st.button("Adjust Parameters"): st.session_state.page = "config_analytics"; st.rerun()
 
-        res_df = raw_df[raw_df['country'].isin(f['regions'])]
+        res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         
-        # 1. Salary Distribution
-        st.markdown("#### 💸 Salary Variance by Region")
+        # Dashboard Layout
+        c1, c2, c3 = st.columns(3)
         sal_clean = res_df[res_df['salary_min'] > 0]
-        if not sal_clean.empty:
-            fig1 = px.box(sal_clean, x="country", y="salary_min", color="country", template="plotly_dark", labels={"salary_min": f"Salary ({f['currency']})", "country": "Region"})
-            fig1.update_traces(hovertemplate="<b>%{x}</b><br>Salary: %{y}<extra></extra>")
-            fig1.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig1, use_container_width=True)
-            st.markdown('<div class="desc-text">This visualization maps the pay scales across your selected regions. The central bar represents the market median, while the "whiskers" show the typical salary range for the tech sector in these locations. High outliers often represent lead or staff-level engineering roles.</div>', unsafe_allow_html=True)
-        
-        # 2. Demand Share
-        st.markdown("#### 📈 Global Opportunity Share")
-        fig2 = px.pie(res_df, names="country", hole=0.6, template="plotly_dark", color_discrete_sequence=px.colors.sequential.Purples)
-        fig2.update_traces(hovertemplate="<b>%{label}</b><br>Share: %{percent}<extra></extra>")
-        fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig2, use_container_width=True)
-        st.markdown('<div class="desc-text">The "Market Share" donut chart identifies the concentration of active tech vacancies. Use this to determine which geographical hubs are currently experiencing the highest hiring volume, indicating a more robust and liquid job market.</div>', unsafe_allow_html=True)
-        
-        # 3. Radar
-        st.markdown("#### 🎯 Skill Demand Density")
-        all_desc = " ".join(res_df['description'].fillna("").tolist()).lower()
-        skill_counts = {s: all_desc.count(s.lower()) for s in SKILL_KEYWORDS}
-        skill_df = pd.DataFrame(list(skill_counts.items()), columns=['Skill', 'Mentions']).sort_values('Mentions', ascending=False)
-        fig3 = px.line_polar(skill_df, r='Mentions', theta='Skill', line_close=True, template="plotly_dark")
-        fig3.update_traces(fill='toself', line_color='#818cf8', hovertemplate="<b>%{theta}</b><br>Mentions: %{r}<extra></extra>")
-        fig3.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig3, use_container_width=True)
-        st.markdown('<div class="desc-text">The radar chart represents the "Technical Pulse" of your selected markets. By analyzing thousands of job descriptions, we calculate the surface area of demand for specific technologies. A shift toward the outer edges signifies a critical requirement for that skill in the current hiring cycle.</div>', unsafe_allow_html=True)
+        avg = (sal_clean['salary_min'].mean() + sal_clean['salary_max'].mean()) / 2 * f['rate'] if not sal_clean.empty else 0
+        c1.metric("Live Sample", f"{len(res_df)} Jobs")
+        c2.metric(f"Market Avg ({f['currency']})", f"{avg:,.0f}" if avg > 0 else "N/A")
+        c3.metric("Top Employer", res_df['company'].value_counts().idxmax() if not res_df.empty else "N/A")
+
+        st.markdown("#### 💸 Salary Benchmarking")
+        fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", color_discrete_sequence=['#6366f1'])
+        fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig1, use_container_width=True)
+        st.markdown('<div class="desc-box">Comparative analysis of regional pay scales. High whiskers indicate advanced specialization premiums in these hubs.</div>', unsafe_allow_html=True)
 
 else:
-    st.error("Platform is offline. Verify Supabase connection.")
+    st.error("Engine Connection Failure.")
