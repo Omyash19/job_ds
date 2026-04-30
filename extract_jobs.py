@@ -52,3 +52,34 @@ def extract_and_load_to_supabase():
 
 if __name__ == "__main__":
     extract_and_load_to_supabase()
+
+import time
+
+# Supported Adzuna Countries
+COUNTRIES = ['us', 'gb', 'in', 'ca', 'au', 'nz', 'at', 'be', 'br', 'ch', 'de', 'es', 'fr', 'it', 'mx', 'nl', 'pl', 'ru', 'za']
+
+def extract_and_load_to_supabase():
+    all_data = []
+    
+    for country in COUNTRIES:
+        print(f"🌍 Fetching data for: {country.upper()}...")
+        url = f"https://api.adzuna.com/v1/api/jobs/{country}/search/1?app_id={APP_ID}&app_key={API_KEY}&results_per_page=20&what={SEARCH_TERM}"
+        
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json().get('results', [])
+                for job in data:
+                    job['country'] = country  # Mark the country for the database
+                all_data.extend(data)
+            
+            time.sleep(1) # Be kind to the API
+        except Exception as e:
+            print(f"Error fetching {country}: {e}")
+
+    if all_data:
+        df = pd.DataFrame(all_data)
+        # ... rest of your transformation logic ...
+        # Ensure 'country' is in your column selection:
+        df = df[['id', 'title', 'company', 'location', 'country', 'salary_min', 'salary_max', 'description']]
+        # ... send to sql ...
