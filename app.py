@@ -42,7 +42,8 @@ if not df.empty:
         "Select Regions:",
         options=all_countries,
         default=all_countries,
-        format_func=lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {COUNTRY_MAP.get(x, {}).get('name', x.upper())}"
+        # The (x or '') part prevents the error if x is None
+        format_func=lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {COUNTRY_MAP.get(x, {}).get('name', (x or 'UNKNOWN').upper())}"
     )
 
     # Job Title Filter
