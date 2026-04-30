@@ -70,8 +70,8 @@ def load_data():
 
 try:
     df = load_data()
-except:
-    st.error("Database Connection Failed.")
+except Exception as e:
+    st.error(f"Database Connection Failed: {e}")
     df = pd.DataFrame()
 
 # 5. NAVIGATION & SIDEBAR
@@ -114,7 +114,7 @@ if not df.empty:
 
             st.markdown(f"""
                 <div class="job-card">
-                    <a href="{row['url']}" target="_blank" style="float:right; background:#6366f1; color:white; padding:10px 20px; border-radius:12px; font-weight:700;">Apply</a>
+                    <a href="{row['url']}" target="_blank" style="float:right; background:#6366f1; color:white; padding:10px 20px; border-radius:12px; font-weight:700; text-decoration:none;">Apply</a>
                     <h2>{row['title']}</h2>
                     <p style="color: #818cf8;">{row['company']} • 📍 {row['location']}</p>
                     <div style="margin-top:10px; margin-bottom:15px;">{skill_html}</div>
@@ -134,11 +134,11 @@ if not df.empty:
         
         c1.metric("Market Sample Size", f"{len(filtered_df)} Jobs")
         c2.metric(f"Global Avg ({currency})", f"{avg:,.0f}" if avg > 0 else "N/A")
-        c3.metric("Lead Hiring Region", filtered_df['country'].value_counts().idxmax().upper())
+        c3.metric("Lead Hiring Region", filtered_df['country'].value_counts().idxmax().upper() if not filtered_df.empty else "N/A")
 
         st.divider()
 
-        # CHART 1: SALARY BY COUNTRY
+        # ROW 1: SALARY & DEMAND
         row1_c1, row1_c2 = st.columns(2)
         with row1_c1:
             st.write("#### Salary Ranges by Country")
@@ -146,29 +146,26 @@ if not df.empty:
             fig1.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig1, use_container_width=True)
 
-       # CHART 2: REGIONAL DEMAND (Share of Jobs)
-with row1_c2:
-    st.write("#### Regional Demand (Share of Jobs)")
-    # Changed px.colors.sequential.Indigo to px.colors.sequential.Purples
-    fig2 = px.pie(filtered_df, names="country", hole=0.6, 
-                 template="plotly_dark", 
-                 color_discrete_sequence=px.colors.sequential.Purples)
-    fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig2, use_container_width=True)
-    
-        # CHART 3: TOP HIRING COMPANIES
+        with row1_c2:
+            st.write("#### Regional Demand (Share of Jobs)")
+            fig2 = px.pie(filtered_df, names="country", hole=0.6, 
+                         template="plotly_dark", 
+                         color_discrete_sequence=px.colors.sequential.Purples)
+            fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)')
+            st.plotly_chart(fig2, use_container_width=True)
+            
+        # ROW 2: COMPANIES & SKILLS
         row2_c1, row2_c2 = st.columns(2)
         with row2_c1:
             st.write("#### Top 10 Hiring Companies")
             top_cos = filtered_df['company'].value_counts().nlargest(10).reset_index()
+            top_cos.columns = ['company', 'count']
             fig3 = px.bar(top_cos, x="count", y="company", orientation='h', template="plotly_dark", color="count")
             fig3.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig3, use_container_width=True)
 
-        # CHART 4: SKILL FREQUENCY (Portfolio Gold!)
         with row2_c2:
             st.write("#### Most Requested Technical Skills")
-            # Logic to count skill mentions in descriptions
             all_desc = " ".join(filtered_df['description'].fillna("").tolist()).lower()
             skill_counts = {s: all_desc.count(s.lower()) for s in SKILL_KEYWORDS}
             skill_df = pd.DataFrame(list(skill_counts.items()), columns=['Skill', 'Mentions']).sort_values('Mentions', ascending=False)
@@ -177,5 +174,6 @@ with row1_c2:
             fig4.update_traces(fill='toself', line_color='#818cf8')
             fig4.update_layout(paper_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig4, use_container_width=True)
+
 else:
-    st.warning("Connect Database to view analytics.")
+    st.warning("Database is empty or connection failed. Please check your Supabase/Adzuna ETL pipeline.")
