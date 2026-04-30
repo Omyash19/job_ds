@@ -2,9 +2,9 @@ name: Daily Job Scraper
 
 # This determines WHEN the script runs
 on:
+  workflow_dispatch: # Allows you to manually click "Run workflow"
   schedule:
     - cron: '0 0 * * *' # Runs automatically every day at midnight UTC
-  workflow_dispatch: # Allows you to click a button to run it manually anytime!
 
 jobs:
   extract-data:
@@ -26,9 +26,8 @@ jobs:
 
       - name: Run Extraction Script
         env:
-          # This securely pulls the secrets you saved earlier
+          # This securely pulls the secrets you saved in GitHub Settings
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_API_KEY: ${{ secrets.ADZUNA_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        # Make sure this matches your actual file name!
         run: python extract_jobs.py
