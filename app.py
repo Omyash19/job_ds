@@ -15,14 +15,16 @@ COUNTRY_MAP = {
     'in': {'name': 'India', 'flag': '🇮🇳', 'currency': 'INR', 'symbol': '₹', 'rate': 0.012}, # Approx rate to USD
     'gb': {'name': 'United Kingdom', 'flag': '🇬🇧', 'currency': 'GBP', 'symbol': '£', 'rate': 1.25},
     'ca': {'name': 'Canada', 'flag': '🇨🇦', 'currency': 'CAD', 'symbol': 'C$', 'rate': 0.73},
-    'de': {'name': 'Germany', 'flag': '🇩🇪', 'currency': 'EUR', 'symbol': '€', 'rate': 1.08}
+    'de': {'name': 'Germany', 'flag': '🇩🇪', 'currency': 'EUR', 'symbol': '€', 'rate': 1.08},
+    'au': {'name': 'Australia', 'flag': '🇦🇺', 'currency': 'AUD', 'symbol': 'A$', 'rate': 0.65},
+    'fr': {'name': 'France', 'flag': '🇫🇷', 'currency': 'EUR', 'symbol': '€', 'rate': 1.08}
 }
 
 # 2. Data Loading with Cache
 @st.cache_data(ttl=3600)
 def load_data():
     engine = create_engine(st.secrets["DATABASE_URL"])
-    # Ensure the country column is included in your SELECT
+    # Ensure the country and url columns are included in your SELECT
     return pd.read_sql("SELECT * FROM tech_jobs", engine)
 
 df = load_data()
@@ -66,6 +68,12 @@ if not filtered_df.empty:
     # --- DATA NORMALIZATION (Handling multiple currencies) ---
     def normalize_salary(row):
         c_code = row.get('country', 'us')
+        if pd.isna(c_code): c_code = 'us'
+        
+        # Prevent math errors if salary is missing
+        if pd.isna(row.get('salary_min')) or pd.isna(row.get('salary_max')):
+            return None
+            
         # Get rate for that country relative to USD, then convert to selected Base Currency
         usd_val = ((row['salary_min'] + row['salary_max']) / 2) * COUNTRY_MAP.get(c_code, {}).get('rate', 1.0)
         return usd_val * fx_rate
@@ -78,7 +86,7 @@ if not filtered_df.empty:
         st.metric("Total Jobs Found", len(filtered_df))
     with col2:
         avg_sal = filtered_df['normalized_avg'].mean()
-        st.metric(f"Avg Salary ({base_currency})", f"{currency_symbol}{avg_sal:,.0f}" if not pd.isna(avg_sal) else "N/A")
+        st.metric(f"Avg Salary ({base_currency})", f"{currency_symbol}{avg_sal:,.0f}" if pd.notna(avg_sal) else "N/A")
     with col3:
         top_comp = filtered_df['company'].mode()[0] if not filtered_df['company'].empty else "N/A"
         st.metric("Top Hiring Company", top_comp)
@@ -90,7 +98,8 @@ if not filtered_df.empty:
 
     with tab1:
         st.subheader("Salary Trends by Role (Normalized)")
-        chart_data = filtered_df.groupby('title')['normalized_avg'].mean().sort_values(ascending=False).head(10)
+        # Filter out rows where normalized_avg is NaN before charting
+        chart_data = filtered_df.dropna(subset=['normalized_avg']).groupby('title')['normalized_avg'].mean().sort_values(ascending=False).head(10)
         if not chart_data.empty:
             st.bar_chart(chart_data)
         else:
@@ -101,13 +110,31 @@ if not filtered_df.empty:
         
         # Add a visual Flag column to the explorer table
         explorer_df = filtered_df.copy()
+        
+        # Setup Region Flag
         if 'country' in explorer_df.columns:
-            explorer_df['region'] = explorer_df['country'].apply(lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {x.upper()}")
+            explorer_df['region'] = explorer_df['country'].apply(lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {str(x).upper() if pd.notna(x) else 'UNKNOWN'}")
         
-        cols_to_show = (['region'] if 'country' in explorer_df.columns else []) + \
-                       ['title', 'company', 'location', 'salary_min', 'salary_max', 'description']
+        # Determine base columns dynamically to avoid errors if 'url' isn't in DB yet
+        base_cols = ['title', 'company', 'location', 'salary_min', 'salary_max']
+        if 'url' in explorer_df.columns:
+            base_cols.append('url')
+        base_cols.append('description') # Put description at the very end
         
-        st.dataframe(explorer_df[cols_to_show], use_container_width=True, height=500)
+        cols_to_show = (['region'] if 'country' in explorer_df.columns else []) + base_cols
+        
+        # Display the dataframe with clickable links!
+        st.dataframe(
+            explorer_df[cols_to_show], 
+            use_container_width=True, 
+            height=500,
+            column_config={
+                "url": st.column_config.LinkColumn(
+                    "Apply Here 🔗", 
+                    display_text="Click to Apply"
+                )
+            }
+        )
 
 else:
     st.info("No data found for the selected filters. Try broadening your search!")
