@@ -60,6 +60,11 @@ if not df.empty:
 else:
     filtered_df = df
 
+# --- MANUAL REFRESH BUTTON ---
+if st.sidebar.button("🔄 Sync Latest Data"):
+    st.cache_data.clear()
+    st.rerun()
+
 # 4. Main UI Layout
 st.title("🌍 Global Tech Job Market Insights")
 st.markdown(f"Currently tracking jobs across **{len(filtered_df['country'].unique()) if 'country' in filtered_df.columns else 1}** regions.")
