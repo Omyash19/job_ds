@@ -146,13 +146,16 @@ if not df.empty:
             fig1.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig1, use_container_width=True)
 
-        # CHART 2: JOB VOLUME BY COUNTRY
-        with row1_c2:
-            st.write("#### Regional Demand (Share of Jobs)")
-            fig2 = px.pie(filtered_df, names="country", hole=0.6, template="plotly_dark", color_discrete_sequence=px.colors.sequential.Indigo)
-            fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig2, use_container_width=True)
-
+       # CHART 2: REGIONAL DEMAND (Share of Jobs)
+with row1_c2:
+    st.write("#### Regional Demand (Share of Jobs)")
+    # Changed px.colors.sequential.Indigo to px.colors.sequential.Purples
+    fig2 = px.pie(filtered_df, names="country", hole=0.6, 
+                 template="plotly_dark", 
+                 color_discrete_sequence=px.colors.sequential.Purples)
+    fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig2, use_container_width=True)
+    
         # CHART 3: TOP HIRING COMPANIES
         row2_c1, row2_c2 = st.columns(2)
         with row2_c1:
