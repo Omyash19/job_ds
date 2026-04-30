@@ -3,8 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 st.set_page_config(page_title="Tech Job Market", layout="wide")
-
-@st.cache_data
+@st.cache_data(ttl=3600) # This tells Streamlit to refresh the data every 1 hour (3600 seconds)
 def load_data():
     engine = create_engine(st.secrets["DATABASE_URL"])
     return pd.read_sql("SELECT * FROM tech_jobs WHERE salary_min IS NOT NULL", engine)
