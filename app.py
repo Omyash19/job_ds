@@ -1,149 +1,109 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_client, create_engine
+import os
 
-# 1. Page Configuration
-st.set_page_config(
-    page_title="Global Tech Job Intelligence",
-    page_icon="🌍",
-    layout="wide"
-)
+# ═══════════════════════════════════════════════════════════════════════════
+# 1. PAGE CONFIG & THEME
+# ═══════════════════════════════════════════════════════════════════════════
+st.set_page_config(page_title="TechJobs Global", page_icon="🌐", layout="wide")
 
-# --- GLOBAL SETTINGS ---
-COUNTRY_MAP = {
-    'us': {'name': 'United States', 'flag': '🇺🇸', 'currency': 'USD', 'symbol': '$', 'rate': 1.0},
-    'in': {'name': 'India', 'flag': '🇮🇳', 'currency': 'INR', 'symbol': '₹', 'rate': 0.012}, # Approx rate to USD
-    'gb': {'name': 'United Kingdom', 'flag': '🇬🇧', 'currency': 'GBP', 'symbol': '£', 'rate': 1.25},
-    'ca': {'name': 'Canada', 'flag': '🇨🇦', 'currency': 'CAD', 'symbol': 'C$', 'rate': 0.73},
-    'de': {'name': 'Germany', 'flag': '🇩🇪', 'currency': 'EUR', 'symbol': '€', 'rate': 1.08},
-    'au': {'name': 'Australia', 'flag': '🇦🇺', 'currency': 'AUD', 'symbol': 'A$', 'rate': 0.65},
-    'fr': {'name': 'France', 'flag': '🇫🇷', 'currency': 'EUR', 'symbol': '€', 'rate': 1.08}
-}
+# Custom CSS for "SaaS" look
+st.markdown("""
+    <style>
+    .main { background-color: #f8f9fa; }
+    .stMetric { background-color: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .job-card { background-color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
+    .apply-btn { background-color: #6366f1; color: white !important; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+    </style>
+""", unsafe_allow_html=True)
 
-# 2. Data Loading with Cache
+# ═══════════════════════════════════════════════════════════════════════════
+# 2. DATA ENGINE (SUPABASE CONNECTION)
+# ═══════════════════════════════════════════════════════════════════════════
 @st.cache_data(ttl=3600)
 def load_data():
-    engine = create_engine(st.secrets["DATABASE_URL"])
-    # Ensure the country and url columns are included in your SELECT
-    return pd.read_sql("SELECT * FROM tech_jobs", engine)
+    # Using your existing DATABASE_URL secret
+    db_url = st.secrets["DATABASE_URL"]
+    engine = create_engine(db_url)
+    query = "SELECT * FROM tech_jobs"
+    df = pd.read_sql(query, engine)
+    
+    # Ensure country is lowercase for consistency
+    if 'country' in df.columns:
+        df['country'] = df['country'].str.lower()
+    return df
 
-df = load_data()
+try:
+    df = load_data()
+except Exception as e:
+    st.error(f"Could not connect to Supabase: {e}")
+    df = pd.DataFrame()
 
-# 3. Sidebar - Global Controls
-st.sidebar.header("🌍 Global Controls")
+# ═══════════════════════════════════════════════════════════════════════════
+# 3. SIDEBAR FILTERS
+# ═══════════════════════════════════════════════════════════════════════════
+st.sidebar.title("🌐 Global Controls")
 
-# Base Currency Selection (For the KPI Metrics)
-base_currency = st.sidebar.selectbox("Dashboard Currency:", ["USD", "INR"], index=0)
-fx_rate = 83.0 if base_currency == "INR" else 1.0
-currency_symbol = "₹" if base_currency == "INR" else "$"
-
-if not df.empty:
-    # Region Filter with Flags
-    all_countries = df['country'].unique().tolist() if 'country' in df.columns else ['us']
-    selected_countries = st.sidebar.multiselect(
-        "Select Regions:",
-        options=all_countries,
-        default=all_countries,
-        # The (x or '') part prevents the error if x is None
-        format_func=lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {COUNTRY_MAP.get(x, {}).get('name', (x or 'UNKNOWN').upper())}"
-    )
-
-    # Job Title Filter
-    all_titles = df['title'].unique().tolist()
-    selected_titles = st.sidebar.multiselect("Filter Job Titles:", all_titles, default=all_titles[:5])
-
-    # Apply Filtering
-    filtered_df = df[
-        (df['country'].isin(selected_countries) if 'country' in df.columns else True) & 
-        (df['title'].isin(selected_titles))
-    ].copy()
-else:
-    filtered_df = df
-
-# --- MANUAL REFRESH BUTTON ---
 if st.sidebar.button("🔄 Sync Latest Data"):
     st.cache_data.clear()
     st.rerun()
 
-# 4. Main UI Layout
-st.title("🌍 Global Tech Job Market Insights")
-st.markdown(f"Currently tracking jobs across **{len(filtered_df['country'].unique()) if 'country' in filtered_df.columns else 1}** regions.")
+currency = st.sidebar.selectbox("Dashboard Currency", ["USD", "INR"])
+exchange_rate = 83.5 if currency == "INR" else 1.0
 
-if not filtered_df.empty:
-    # --- DATA NORMALIZATION (Handling multiple currencies) ---
-    def normalize_salary(row):
-        c_code = row.get('country', 'us')
-        if pd.isna(c_code): c_code = 'us'
-        
-        # Prevent math errors if salary is missing
-        if pd.isna(row.get('salary_min')) or pd.isna(row.get('salary_max')):
-            return None
-            
-        # Get rate for that country relative to USD, then convert to selected Base Currency
-        usd_val = ((row['salary_min'] + row['salary_max']) / 2) * COUNTRY_MAP.get(c_code, {}).get('rate', 1.0)
-        return usd_val * fx_rate
-
-    filtered_df['normalized_avg'] = filtered_df.apply(normalize_salary, axis=1)
-
-    # --- KPI Metrics Row ---
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Total Jobs Found", len(filtered_df))
-    with col2:
-        avg_sal = filtered_df['normalized_avg'].mean()
-        st.metric(f"Avg Salary ({base_currency})", f"{currency_symbol}{avg_sal:,.0f}" if pd.notna(avg_sal) else "N/A")
-    with col3:
-        top_comp = filtered_df['company'].mode()[0] if not filtered_df['company'].empty else "N/A"
-        st.metric("Top Hiring Company", top_comp)
-
-    st.divider()
-
-    # --- Navigation Tabs ---
-    tab1, tab2 = st.tabs(["📊 Market Analytics", "🔍 Global Job Explorer"])
-
-    with tab1:
-        st.subheader("Salary Trends by Role (Normalized)")
-        # Filter out rows where normalized_avg is NaN before charting
-        chart_data = filtered_df.dropna(subset=['normalized_avg']).groupby('title')['normalized_avg'].mean().sort_values(ascending=False).head(10)
-        if not chart_data.empty:
-            st.bar_chart(chart_data)
-        else:
-            st.info("Insufficient salary data for these filters.")
-
-    with tab2:
-        st.subheader("Detailed Listings")
-        
-        # Add a visual Flag column to the explorer table
-        explorer_df = filtered_df.copy()
-        
-        # Setup Region Flag
-        if 'country' in explorer_df.columns:
-            explorer_df['region'] = explorer_df['country'].apply(lambda x: f"{COUNTRY_MAP.get(x, {}).get('flag', '🌐')} {str(x).upper() if pd.notna(x) else 'UNKNOWN'}")
-        
-        # Determine base columns dynamically to avoid errors if 'url' isn't in DB yet
-        base_cols = ['title', 'company', 'location', 'salary_min', 'salary_max']
-        if 'url' in explorer_df.columns:
-            base_cols.append('url')
-        base_cols.append('description') # Put description at the very end
-        
-        cols_to_show = (['region'] if 'country' in explorer_df.columns else []) + base_cols
-        
-        # Display the dataframe with clickable links!
-        st.dataframe(
-            explorer_df[cols_to_show], 
-            use_container_width=True, 
-            height=500,
-            column_config={
-                "url": st.column_config.LinkColumn(
-                    "Apply Here 🔗", 
-                    display_text="Click to Apply"
-                )
-            }
-        )
-
+# Dynamic Filters based on your LIVE data
+if not df.empty:
+    all_regions = sorted(df['country'].unique().tolist())
+    selected_regions = st.sidebar.multiselect("Select Regions", all_regions, default=all_regions[:2])
+    
+    search_query = st.sidebar.text_input("Search Jobs or Companies")
+    
+    # Filtering Logic
+    filtered_df = df[df['country'].isin(selected_regions)]
+    if search_query:
+        filtered_df = filtered_df[
+            filtered_df['title'].str.contains(search_query, case=False) | 
+            filtered_df['company'].str.contains(search_query, case=False)
+        ]
 else:
-    st.info("No data found for the selected filters. Try broadening your search!")
+    filtered_df = pd.DataFrame()
 
-# 5. Footer Information
-st.sidebar.divider()
-st.sidebar.caption(f"Last data refresh: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}")
+# ═══════════════════════════════════════════════════════════════════════════
+# 4. MAIN DASHBOARD
+# ═══════════════════════════════════════════════════════════════════════════
+st.title("🚀 Tech Job Market Intelligence")
+st.write(f"Currently tracking **{len(filtered_df)}** active roles globally.")
+
+# KPI Row
+m1, m2, m3 = st.columns(3)
+if not filtered_df.empty:
+    avg_sal = (filtered_df['salary_min'].mean() + filtered_df['salary_max'].mean()) / 2 * exchange_rate
+    top_co = filtered_df['company'].value_counts().idxmax()
+    
+    m1.metric("Total Jobs Found", len(filtered_df))
+    m2.metric(f"Avg Salary ({currency})", f"{avg_sal:,.0f}")
+    m3.metric("Top Hiring Company", top_co)
+
+st.divider()
+
+# Job Listing Loop (The "UI" part)
+if not filtered_df.empty:
+    for _, row in filtered_df.iterrows():
+        with st.container():
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.subheader(f"{row['title']}")
+                st.write(f"**{row['company']}** | 📍 {row['location']} ({row['country'].upper()})")
+                st.caption(f"Salary Range: {row['salary_min'] * exchange_rate:,.0f} - {row['salary_max'] * exchange_rate:,.0f} {currency}")
+            
+            with col2:
+                st.write("") # Spacing
+                # This creates a real clickable button link
+                st.markdown(f'<a href="{row["url"]}" target="_blank" class="apply-btn">Apply Here 🔗</a>', unsafe_allow_html=True)
+            
+            with st.expander("View Job Description"):
+                st.write(row['description'])
+            st.write("---")
+else:
+    st.info("Adjust the filters to see available job roles.")
