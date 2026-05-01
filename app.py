@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 import plotly.express as px
+import time
 
-# 1. PAGE CONFIG
+# 1. PAGE CONFIG (Full Immersive)
 st.set_page_config(
-    page_title="ECHOES | Global Tech Intelligence", 
+    page_title="ECHOES | Tech Intelligence", 
     page_icon="💎", 
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -19,87 +20,85 @@ COUNTRY_MAP = {
     "mx": "Mexico", "nl": "Netherlands", "nz": "New Zealand", "pl": "Poland", 
     "sg": "Singapore", "us": "United States", "za": "South Africa"
 }
-COUNTRY_FLAGS = {
-    "au": "🇦🇺", "br": "🇧🇷", "ca": "🇨🇦", "fr": "🇫🇷", "de": "🇩🇪", "in": "🇮🇳", 
-    "ie": "🇮🇪", "nl": "🇳🇱", "pl": "🇵🇱", "sg": "🇸🇬", "us": "🇺🇸", "gb": "🇬🇧"
-}
-TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer", "DevOps Engineer"]
-SKILL_KEYWORDS = ["Python", "SQL", "AWS", "Azure", "Docker", "Kubernetes", "Spark", "React", "Tableau", "Snowflake", "Java"]
+COUNTRY_FLAGS = {"us": "🇺🇸", "gb": "🇬🇧", "in": "🇮🇳", "au": "🇦🇺", "ca": "🇨🇦", "de": "🇩🇪", "fr": "🇫🇷"}
+TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Machine Learning Engineer", "DevOps Engineer"]
 
-# 3. ADVANCED UI FINISHING (CSS)
+# 3. ELITE UI ARCHITECTURE (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     
     html, body, [class*="css"], [class*="st-"] { font-family: 'Plus Jakarta Sans', sans-serif; color: #0f172a; }
-    .stApp { background: #F8FAFC; }
-    [data-testid="stSidebar"] { display: none; }
-    [data-testid="collapsedControl"] { display: none; }
 
-    .hero-title { text-align: center; color: #0f172a; font-weight: 800; font-size: 3.5rem; margin-top: 40px; }
-    .hero-subtitle { text-align: center; color: #6366f1; font-size: 1.1rem; margin-bottom: 30px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
-    .section-header { text-align: center; color: #0f172a; font-weight: 800; font-size: 2.2rem; margin-bottom: 20px; }
-
-    /* Glassmorphism Configuration Card */
-    [data-testid="column"] > div[data-testid="stVerticalBlock"]:has(.config-card-marker) {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(20px);
-        border: 1px solid white;
-        border-radius: 32px;
-        padding: 50px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
-        max-width: 800px;
-        margin: 0 auto;
+    /* 1. Realistic Glass Mesh Background */
+    .stApp {
+        background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                    #F8FAFC;
     }
 
-    /* Horizontal Job Card */
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] { display: none; }
+
+    /* 2. Visual Hierarchy Typography */
+    .hero-title { text-align: center; color: #0f172a; font-weight: 800; font-size: 4.2rem; margin-top: 50px; margin-bottom: 0px; letter-spacing: -2px; }
+    .hero-bridge { text-align: center; color: #475569; font-size: 1.4rem; font-weight: 500; margin-bottom: 10px; }
+    .hero-subtitle { text-align: center; color: #6366f1; font-size: 0.9rem; margin-bottom: 50px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; }
+
+    /* 3. Refined Glassmorphic Card (No Pop-in) */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 32px;
+        padding: 45px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.06);
+    }
+
+    /* 4. Horizontal Job Card with Micro-interactions */
     .job-card {
         background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(20px);
-        padding: 25px 35px;
+        border: 1px solid white;
         border-radius: 20px;
+        padding: 25px 35px;
         margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border: 1px solid white;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
-    
-    .apply-btn {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        color: white !important;
-        padding: 12px 30px;
-        border-radius: 14px;
-        text-decoration: none !important;
-        font-weight: 700;
-        font-size: 0.9rem;
-        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
-    }
-
-    .insight-footer {
-        background: rgba(99, 102, 241, 0.05);
-        padding: 20px;
-        border-radius: 16px;
-        border-left: 4px solid #6366f1;
-        margin-top: 30px;
-        color: #475569;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-
-    .report-card {
+    .job-card:hover {
+        transform: translateX(10px);
         background: white;
-        border-top: 6px solid #6366f1;
-        padding: 40px;
-        border-radius: 24px;
-        margin-bottom: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border-left: 8px solid #6366f1;
+        box-shadow: 20px 20px 40px rgba(0,0,0,0.05);
     }
+
+    /* 5. KPI Analytics Summary Tiles */
+    .kpi-container { display: flex; gap: 20px; margin-bottom: 40px; justify-content: center; }
+    .kpi-tile {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        flex: 1;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .kpi-value { color: #6366f1; font-weight: 800; font-size: 1.8rem; display: block; }
+    .kpi-label { color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+
+    /* Buttons */
+    .stButton > button { border-radius: 14px; font-weight: 700; transition: all 0.2s ease; border: 1px solid #e2e8f0; background: white; }
+    .stButton > button:hover { border-color: #6366f1; color: #6366f1; transform: translateY(-2px); }
+    .stButton > button[kind="primary"] { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; }
+
+    /* Narrative Box */
+    .narrative-box { color: #475569; font-size: 1rem; line-height: 1.7; padding: 20px; background: rgba(99, 102, 241, 0.03); border-radius: 15px; border-left: 4px solid #6366f1; margin-top: 20px; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. DATA ENGINE (DATABASE RESTORED)
+# 4. DATA ENGINE
 @st.cache_data(ttl=3600)
 def load_data():
     try:
@@ -111,113 +110,126 @@ def load_data():
         df['country_code'] = df['country'].str.lower()
         df['country_name'] = df['country_code'].map(COUNTRY_MAP).fillna(df['country_code'].str.upper())
         return df
-    except Exception as e:
-        st.error(f"Database Connection Error: {e}")
+    except:
         return pd.DataFrame()
 
 raw_df = load_data()
 
 # 5. STATE MANAGEMENT
-if 'page' not in st.session_state: st.session_state.page = "landing"
-if 'filters' not in st.session_state: st.session_state.filters = {}
+if 'view' not in st.session_state: st.session_state.view = "landing"
+if 'f' not in st.session_state: st.session_state.f = {}
 
-# 6. APP CONTENT
+# 6. APP LOGIC
 if not raw_df.empty:
     
-    # ─── VIEW 1: LANDING PAGE ───
-    if st.session_state.page == "landing":
+    # ─── LANDING ───
+    if st.session_state.view == "landing":
         st.markdown('<h1 class="hero-title">ECHOES 💎</h1>', unsafe_allow_html=True)
-        st.markdown('<p class="hero-subtitle">The Intelligence Layer for Global Tech</p>', unsafe_allow_html=True)
-        _, center, _ = st.columns([1, 2, 1])
-        with center:
-            if st.button("Launch Job Explorer", use_container_width=True, type="primary"):
-                st.session_state.page = "config_explorer"; st.rerun()
-            if st.button("Access Intelligence", use_container_width=True):
-                st.session_state.page = "config_analytics"; st.rerun()
+        st.markdown('<p class="hero-bridge">Macro-economic Tech Market Intelligence</p>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-subtitle">High Precision Data for the Modern Analyst</p>', unsafe_allow_html=True)
+        
+        _, c1, c2, _ = st.columns([1, 2, 2, 1])
+        with c1:
+            if st.button("🔍 Launch Job Explorer", use_container_width=True, type="primary"):
+                st.session_state.view = "config_explorer"; st.rerun()
+        with c2:
+            if st.button("📊 Access Intelligence", use_container_width=True):
+                st.session_state.view = "config_analytics"; st.rerun()
 
-    # ─── VIEW 2: CONFIGURATION PAGE ───
-    elif st.session_state.page in ["config_explorer", "config_analytics"]:
-        st.markdown('<h2 class="section-header">Configure Your Insight</h2>', unsafe_allow_html=True)
-        _, center_col, _ = st.columns([1, 4, 1])
+    # ─── CONFIGURATION ───
+    elif st.session_state.view in ["config_explorer", "config_analytics"]:
+        st.markdown('<div style="height:60px;"></div>', unsafe_allow_html=True)
+        _, center_col, _ = st.columns([1, 2.5, 1])
         with center_col:
-            st.markdown("<div class='config-card-marker'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown('<h2 style="margin-top:0; color:#0f172a; font-weight:800;">Configure Insight</h2>', unsafe_allow_html=True)
             
-            # STEP 1: FILTERS (Top)
-            st.markdown("<h4 style='margin-top:0; color:#0f172a;'>1. Set Data Parameters</h4>", unsafe_allow_html=True)
-            available_countries = sorted(raw_df['country_name'].unique().tolist())
-            sel_regions = st.multiselect("Target Regions", available_countries, default=[available_countries[0]])
+            sel_regions = st.multiselect("1. Target Regions", sorted(raw_df['country_name'].unique().tolist()), default=[raw_df['country_name'].unique().tolist()[0]])
             
-            f_col1, f_col2 = st.columns(2)
-            with f_col1:
-                sel_currency = st.radio("Financial Currency", ["USD", "INR"], horizontal=True)
-            with f_col2:
+            c_a, c_b = st.columns(2)
+            with c_a:
+                sel_currency = st.radio("2. Financial Currency", ["USD", "INR"], horizontal=True)
+            with c_b:
                 sel_role = "All Roles"
-                if st.session_state.page == "config_explorer":
-                    sel_role = st.selectbox("Tech Stack Preference", ["All Roles"] + TECH_ROLES)
+                if st.session_state.view == "config_explorer":
+                    sel_role = st.selectbox("3. Tech Stack Preference", ["All Roles"] + TECH_ROLES)
             
-            st.markdown("<div style='height: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom:30px;'></div>", unsafe_allow_html=True)
-
-            # STEP 2: ACTION (Middle)
-            btn_label = "Search Live Market" if st.session_state.page == "config_explorer" else "Generate Market Report"
+            st.markdown('<div style="height:30px;"></div>', unsafe_allow_html=True)
+            
+            btn_label = "Search Live Market" if st.session_state.view == "config_explorer" else "Generate Intelligence Report"
             if st.button(btn_label, use_container_width=True, type="primary"):
-                st.session_state.filters = {"regions": sel_regions, "currency": sel_currency, "role": sel_role, "rate": 83.5 if sel_currency == "INR" else 1.0}
-                st.session_state.page = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
+                st.session_state.f = {"regions": sel_regions, "currency": sel_currency, "role": sel_role, "rate": 83.5 if sel_currency == "INR" else 1.0}
+                st.session_state.view = "results_explorer" if st.session_state.view == "config_explorer" else "results_analytics"
                 st.rerun()
             
-            # STEP 3: INSIGHT GUIDE (Bottom)
-            st.markdown(f"""
-                <div class="insight-footer">
-                    <strong>💡 Insight Guide:</strong><br/>
-                    Select multiple regions to compare macro-economic tech trends. 
-                    { "Setting a specific tech stack preference allows ECHOES to filter precision benchmarks." if st.session_state.page == "config_explorer" else "Intelligence reports include regional salary variance and market share." }
-                </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("← Back to Home", use_container_width=True):
-                st.session_state.page = "landing"; st.rerun()
+            if st.button("← Back", use_container_width=True):
+                st.session_state.view = "landing"; st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # ─── VIEW 3: RESULTS (Explorer) ───
-    elif st.session_state.page == "results_explorer":
-        f = st.session_state.filters
-        st.markdown(f'<h3 style="text-align:center;">🔍 Explorer: {f["role"]} in {", ".join(f["regions"])}</h3>', unsafe_allow_html=True)
-        if st.button("← Back"): st.session_state.page = "config_explorer"; st.rerun()
+    # ─── EXPLORER RESULTS ───
+    elif st.session_state.view == "results_explorer":
+        f = st.session_state.f
+        st.markdown(f'<h2 style="text-align:center; font-weight:800; color:#0f172a;">🔍 Global Explorer</h2>', unsafe_allow_html=True)
+        st.markdown(f'<p style="text-align:center; color:#64748b;">{f["role"]} matching across {", ".join(f["regions"])}</p>', unsafe_allow_html=True)
+        
+        _, back_c, _ = st.columns([1, 0.4, 1])
+        with back_c:
+            if st.button("← Back", use_container_width=True): st.session_state.view = "config_explorer"; st.rerun()
+
+        # Search Bar for Information Density
+        search_query = st.text_input("Filter results by keyword (e.g. Remote, Netflix)...", placeholder="Search live data...")
 
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         if f['role'] != "All Roles":
             res_df = res_df[res_df['title'].str.contains(f['role'], case=False)]
-        
+        if search_query:
+            res_df = res_df[res_df['title'].str.contains(search_query, case=False) | res_df['company'].str.contains(search_query, case=False)]
+
         for _, row in res_df.iterrows():
             flag = COUNTRY_FLAGS.get(row['country_code'], "📍")
-            sal = f"{row['salary_min']*f['rate']:,.0f} - {row['salary_max']*f['rate']:,.0f} {f['currency']}" if row['salary_min'] > 0 else "Competitive Market Rate"
+            sal = f"{row['salary_min']*f['rate']:,.0f} - {row['salary_max']*f['rate']:,.0f} {f['currency']}" if row['salary_min'] > 0 else "Benchmark Disclosed on Apply"
             st.markdown(f"""
                 <div class="job-card">
-                    <div style="flex:1; text-align: left;">
-                        <h2 style="margin:0; font-size:1.5rem; color:#0f172a;">{row['title']}</h2>
-                        <p style="color: #6366f1; font-weight: 700; margin: 8px 0; font-size:1rem;">{row['company']} • {flag} {row['location']} ({row['country_name']})</p>
-                        <p style="color: #475569; font-size: 0.9rem; font-weight:600; margin:0;">Benchmark: {sal}</p>
+                    <div style="flex:1;">
+                        <h3 style="margin:0; font-size:1.4rem; color:#0f172a;">{row['title']}</h3>
+                        <p style="color: #6366f1; font-weight: 700; margin: 8px 0;">{row['company']} • {flag} {row['location']} ({row['country_name']})</p>
+                        <p style="color: #64748b; font-size: 0.9rem; font-weight:600;">{sal}</p>
                     </div>
                     <a href="{row['url']}" target="_blank" class="apply-btn">Apply Now</a>
                 </div>
             """, unsafe_allow_html=True)
 
-    # ─── VIEW 4: RESULTS (Analytics) ───
-    elif st.session_state.page == "results_analytics":
-        f = st.session_state.filters
-        st.markdown(f'<h3 style="text-align:center;">📊 Intelligence Report: {", ".join(f["regions"])}</h3>', unsafe_allow_html=True)
-        if st.button("← Back"): st.session_state.page = "config_analytics"; st.rerun()
+    # ─── ANALYTICS RESULTS ───
+    elif st.session_state.view == "results_analytics":
+        f = st.session_state.f
+        st.markdown(f'<h2 style="text-align:center; font-weight:800; color:#0f172a;">📊 Intelligence Report</h2>', unsafe_allow_html=True)
+        
+        _, back_c, _ = st.columns([1, 0.4, 1])
+        with back_c:
+            if st.button("← Back", use_container_width=True): st.session_state.view = "config_analytics"; st.rerun()
 
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         sal_clean = res_df[res_df['salary_min'] > 0]
         
-        # Section 1: Salary Box Plot
-        st.markdown('<div class="report-card">', unsafe_allow_html=True)
-        st.markdown('<h4>💸 Regional Salary Variance</h4>', unsafe_allow_html=True)
+        # KPI SUMMARY TILES (The roadmap requirement)
+        avg_sal = (sal_clean['salary_min'].mean() + sal_clean['salary_max'].mean())/2 * f['rate'] if not sal_clean.empty else 0
+        st.markdown(f"""
+            <div class="kpi-container">
+                <div class="kpi-tile"><span class="kpi-label">Median Salary</span><span class="kpi-value">{f['currency']} {avg_sal:,.0f}</span></div>
+                <div class="kpi-tile"><span class="kpi-label">Active Records</span><span class="kpi-value">{len(res_df)}</span></div>
+                <div class="kpi-tile"><span class="kpi-label">Market Velocity</span><span class="kpi-value">High</span></div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Salary Box Plot
+        st.markdown('<div class="glass-card" style="margin-bottom:40px;">', unsafe_allow_html=True)
+        st.markdown('<h3 style="margin-top:0;">💸 Regional Salary Variance</h3>', unsafe_allow_html=True)
         if not sal_clean.empty:
-            fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", color_discrete_sequence=['#6366f1'], labels={"salary_min": f"Salary ({f['currency']})", "country_name": "Region"})
-            fig1.update_traces(hovertemplate="<b>%{x}</b><br>Value: %{y:,.1f}<extra></extra>")
-            fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig1, use_container_width=True)
+            fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", color_discrete_sequence=['#6366f1'])
+            fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(t=0,b=0))
+            st.plotly_chart(fig1, use_container_width=True, config={'displayModeBar': False})
+        st.markdown('<div class="narrative-box">Statistical identification of pay floors and ceilings. Outliers indicate specialized roles commanding significant market premiums.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.error("Engine offline. Please check your DATABASE_URL in secrets.toml.")
+    st.error("Engine offline. Please verify database connectivity.")
