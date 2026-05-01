@@ -150,7 +150,7 @@ st.markdown("""
         border-radius: 24px;
         padding: 40px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
-        max-width: 850px;
+        max-width: 950px; /* Made wider for two column layout */
         margin: 0 auto;
     }
     
@@ -209,47 +209,63 @@ if not raw_df.empty:
         st.markdown('<h1 class="hero-title">ECHOES 💎</h1>', unsafe_allow_html=True)
         st.markdown('<p class="hero-subtitle">The Intelligence Layer for Global Tech</p>', unsafe_allow_html=True)
         
-        _, col1, col2, _ = st.columns([1, 2, 2, 1])
-        with col1:
-            if st.button("🔍 Launch Job Explorer", use_container_width=True, type="primary"):
-                st.session_state.page = "config_explorer"; st.rerun()
-        with col2:
-            if st.button("📊 Market Intelligence", use_container_width=True, type="primary"):
-                st.session_state.page = "config_analytics"; st.rerun()
+        _, center, _ = st.columns([1, 3, 1])
+        with center:
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("""
+                <div class="job-card" style="flex-direction: column; align-items: flex-start; padding: 30px;">
+                    <h3 style="margin-top:0; color:#0f172a; font-size: 1.4rem;">🔍 Job Explorer</h3>
+                    <p style="color:#475569; font-size:0.95rem; line-height: 1.6; margin-bottom: 25px;">Discover premium tech roles tailored to your stack across global markets. Skip the noise and find your perfect fit.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("Launch Job Explorer", use_container_width=True, type="primary"):
+                    st.session_state.page = "config_explorer"; st.rerun()
+            with c2:
+                st.markdown("""
+                <div class="job-card" style="flex-direction: column; align-items: flex-start; padding: 30px;">
+                    <h3 style="margin-top:0; color:#0f172a; font-size: 1.4rem;">📊 Market Intelligence</h3>
+                    <p style="color:#475569; font-size:0.95rem; line-height: 1.6; margin-bottom: 25px;">Analyze real-time salary benchmarks, top hiring hubs, and tech stack distribution with dynamic visualizations.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("Access Intelligence", use_container_width=True, type="primary"):
+                    st.session_state.page = "config_analytics"; st.rerun()
 
     # ─── VIEW 2: CONFIGURATION PAGE ───
     elif st.session_state.page in ["config_explorer", "config_analytics"]:
         st.markdown('<h2 class="section-header">Configure Your Insight</h2>', unsafe_allow_html=True)
         
-        # Center aligning using columns
-        _, center_col, _ = st.columns([1, 2.5, 1])
+        # Center aligning using columns, making it wider for the two-column layout
+        _, center_col, _ = st.columns([1, 3.5, 1])
         
         with center_col:
             st.markdown("<div class='config-card-marker'></div>", unsafe_allow_html=True)
-            # Row 1: Regions and Currency
-            c1, c2 = st.columns(2)
-            with c1:
+            left_col, right_col = st.columns([1.5, 1])
+            
+            with left_col:
+                st.markdown("<h4 style='margin-top:0; margin-bottom:20px; color:#0f172a;'>Data Parameters</h4>", unsafe_allow_html=True)
                 sel_regions = st.multiselect("Target Regions", sorted(raw_df['country_name'].unique().tolist()), default=[raw_df['country_name'].unique().tolist()[0]])
-            with c2:
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
                 sel_currency = st.radio("Financial Currency", ["USD", "INR"], horizontal=True)
-            
-            # Row 2: Role (Explorer Only)
-            sel_role = "All Roles"
-            if st.session_state.page == "config_explorer":
-                sel_role = st.selectbox("Specify Tech Stack Preference", ["All Roles"] + TECH_ROLES)
-            
-            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True) # Spacing
-            
-            # Action Buttons
-            btn_label = "Search Live Market" if st.session_state.page == "config_explorer" else "Generate Market Report"
-            if st.button(btn_label, use_container_width=True, type="primary"):
-                st.session_state.filters = {"regions": sel_regions, "currency": sel_currency, "role": sel_role, "rate": 83.5 if sel_currency == "INR" else 1.0}
-                st.session_state.page = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
-                st.rerun()
-            
-            # Back Button
-            if st.button("← Back", use_container_width=True):
-                st.session_state.page = "landing"; st.rerun()
+                st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+                
+                sel_role = "All Roles"
+                if st.session_state.page == "config_explorer":
+                    sel_role = st.selectbox("Specify Tech Stack Preference", ["All Roles"] + TECH_ROLES)
+                    
+            with right_col:
+                st.markdown("<h4 style='margin-top:0; margin-bottom:20px; color:#0f172a;'>Insight Guide</h4>", unsafe_allow_html=True)
+                st.markdown("<div style='color:#475569; font-size:0.9rem; line-height:1.6;'>Select multiple regions to compare macro-economic tech trends. Setting a specific tech stack preference allows ECHOES to filter the noise and deliver high-precision benchmarks.</div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+                
+                btn_label = "Search Live Market" if st.session_state.page == "config_explorer" else "Generate Market Report"
+                if st.button(btn_label, use_container_width=True, type="primary"):
+                    st.session_state.filters = {"regions": sel_regions, "currency": sel_currency, "role": sel_role, "rate": 83.5 if sel_currency == "INR" else 1.0}
+                    st.session_state.page = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
+                    st.rerun()
+                
+                if st.button("← Back to Home", use_container_width=True):
+                    st.session_state.page = "landing"; st.rerun()
 
     # ─── VIEW 3: RESULTS (Explorer) ───
     elif st.session_state.page == "results_explorer":
@@ -311,9 +327,9 @@ if not raw_df.empty:
         k2.metric(f"Market Midpoint ({f['currency']})", f"{avg:,.0f}" if avg > 0 else "N/A")
         k3.metric("Top Hiring Hub", res_df['country_name'].value_counts().idxmax() if not res_df.empty else "N/A")
 
-        st.markdown('<h4 style="color:#0f172a; margin-top:30px;">💸 Salary Benchmarking</h4>', unsafe_allow_html=True)
-        
         if not sal_clean.empty:
+            # Chart 1: Salary Benchmarking (Box Plot)
+            st.markdown('<h4 style="color:#0f172a; margin-top:30px;">💸 Salary Benchmarking</h4>', unsafe_allow_html=True)
             fig1 = px.box(sal_clean, x="country_name", y="salary_min", 
                           template="plotly_white", 
                           color_discrete_sequence=['#6366f1'],
@@ -325,8 +341,34 @@ if not raw_df.empty:
             )
             st.plotly_chart(fig1, use_container_width=True)
             st.markdown('<div class="desc-box">Comparative analysis of regional pay scales. Outliers indicate specialized roles with higher market premiums.</div>', unsafe_allow_html=True)
+            
+            # Additional Charts in a Grid
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown('<h4 style="color:#0f172a; margin-top:20px;">🏢 Top Hiring Companies</h4>', unsafe_allow_html=True)
+                company_counts = res_df['company'].value_counts().head(8).reset_index()
+                company_counts.columns = ['company', 'count']
+                fig2 = px.bar(company_counts, x='count', y='company', orientation='h', 
+                              template="plotly_white", color_discrete_sequence=['#8b5cf6'])
+                fig2.update_layout(yaxis={'categoryorder':'total ascending'}, 
+                                   paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                                   font=dict(family="Plus Jakarta Sans", color="#0f172a"))
+                st.plotly_chart(fig2, use_container_width=True)
+                st.markdown('<div class="desc-box" style="margin-left:0; margin-bottom:20px;">Leading organizations actively acquiring tech talent in your selected regions.</div>', unsafe_allow_html=True)
+                
+            with c2:
+                st.markdown('<h4 style="color:#0f172a; margin-top:20px;">🛠️ Tech Stack Demand</h4>', unsafe_allow_html=True)
+                role_counts = res_df['title'].value_counts().head(6).reset_index()
+                role_counts.columns = ['title', 'count']
+                fig3 = px.pie(role_counts, values='count', names='title', hole=0.5, 
+                              template="plotly_white", color_discrete_sequence=px.colors.sequential.Purp)
+                fig3.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                                   font=dict(family="Plus Jakarta Sans", color="#0f172a"))
+                st.plotly_chart(fig3, use_container_width=True)
+                st.markdown('<div class="desc-box" style="margin-left:0; margin-bottom:20px;">A breakdown of the most sought-after skillsets and specialized roles currently open.</div>', unsafe_allow_html=True)
+                
         else:
-            st.info("Not enough salary data to generate chart.")
+            st.info("Not enough salary data to generate charts.")
 
 else:
     st.error("Engine failure. Please check your connection.")
