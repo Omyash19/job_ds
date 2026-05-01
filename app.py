@@ -135,7 +135,7 @@ raw_df = load_data()
 if 'triggered' not in st.session_state: st.session_state.triggered = False
 
 # 6. APP CONTENT (ONE PAGE FLOW)
-st.markdown('<div class="master-header"><h1 class="master-title">ECHOES 💎</h1><p class="master-subtitle">High Precision Data for the Modern Analyst</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="master-header"><h1 class="master-title">MarketSense</h1><p class="Advanced Analytics for Global Tech Market Discovery"</p></div>', unsafe_allow_html=True)
 
 if not raw_df.empty:
     # ─── MASTER FILTER SECTION ───
