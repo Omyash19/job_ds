@@ -25,72 +25,53 @@ COUNTRY_FLAGS = {
 }
 TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer", "DevOps Engineer"]
 
-# 3. ADVANCED UI FINISHING (CSS)
+# 3. ADVANCED UI FINISHING (CSS) - Removed redundant blocks and cleaned up spacing
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
-    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; color: white; }
     
-    /* Background & Sidebar Hide */
-    .main { background: #f8fafc; }
+    /* Solid Background to match your environment */
+    .main { background: #0c0e12; }
     [data-testid="stSidebar"] { display: none; }
 
-    /* Centered Configuration Card Styling */
-    [data-testid="stVerticalBlock"] > div:has(div.config-card) {
-        display: flex;
-        justify-content: center;
-    }
-    
-    .config-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 1);
-        padding: 40px 60px;
-        border-radius: 35px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-        width: 100%;
-        max-width: 850px;
-        margin: 40px auto;
-    }
-
     /* Titles & Headings */
-    .hero-title { text-align: center; color: #0f172a; font-weight: 800; font-size: 4rem; margin-top: 50px; margin-bottom: 5px; }
-    .hero-subtitle { text-align: center; color: #6366f1; font-size: 1.1rem; margin-bottom: 40px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
-    .section-header { text-align: center; color: #0f172a; font-weight: 800; font-size: 2.2rem; margin-bottom: 30px; }
+    .hero-title { text-align: center; color: white; font-weight: 800; font-size: 4rem; margin-top: 50px; margin-bottom: 5px; }
+    .hero-subtitle { text-align: center; color: #818cf8; font-size: 1.1rem; margin-bottom: 40px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    .section-header { text-align: center; color: white; font-weight: 800; font-size: 2.2rem; margin-bottom: 20px; }
 
-    /* Horizontal Glass Job Card (Verbatim reference image_c64a75.png) */
+    /* Horizontal Glass Job Card */
     .job-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.9);
+        background: #1e2028;
         padding: 25px 35px;
-        border-radius: 28px;
+        border-radius: 20px;
         margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         transition: all 0.3s ease;
     }
-    .job-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(99, 102, 241, 0.12); }
+    .job-card:hover { transform: translateY(-4px); border: 1px solid rgba(129, 140, 248, 0.3); background: #252731; }
     
     .apply-btn {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: #6366f1;
         color: white !important;
         padding: 12px 30px;
-        border-radius: 16px;
+        border-radius: 14px;
         text-decoration: none;
         font-weight: 700;
         font-size: 0.9rem;
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
     }
     
-    /* Clean description boxes */
-    .desc-box { color: #475569; font-size: 1rem; line-height: 1.7; padding: 30px; background: white; border-radius: 24px; margin-bottom: 40px; border: 1px solid #f1f5f9; }
+    .desc-box { color: #9ca3af; font-size: 1rem; line-height: 1.7; padding: 25px; background: rgba(255,255,255,0.02); border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
     
-    /* Center aligning action buttons */
-    .stButton > button { border-radius: 14px; font-weight: 700; }
+    /* Standardizing Button Styles */
+    .stButton > button { border-radius: 12px; font-weight: 700; height: 3em; }
+    
+    /* Fix for the empty block issue: Target the vertical block spacing */
+    [data-testid="stVerticalBlock"] > div { gap: 0rem; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -131,18 +112,14 @@ if not raw_df.empty:
             if st.button("📊 Market Intelligence", use_container_width=True):
                 st.session_state.page = "config_analytics"; st.rerun()
 
-    # ─── VIEW 2: CONFIGURATION PAGE (Redesigned to remove grey space) ───
+    # ─── VIEW 2: CONFIGURATION PAGE (Cleaned and formatted) ───
     elif st.session_state.page in ["config_explorer", "config_analytics"]:
-        st.markdown('<div style="height:40px;"></div>', unsafe_allow_html=True) # Spacing
         st.markdown('<h2 class="section-header">Configure Your Insight</h2>', unsafe_allow_html=True)
         
-        # Centering wrapper
-        _, center_col, _ = st.columns([1, 4, 1])
+        # Center aligning using columns
+        _, center_col, _ = st.columns([1, 2.5, 1])
         
         with center_col:
-            # We use a markdown class here to style this specific container
-            st.markdown('<div class="config-card">', unsafe_allow_html=True)
-            
             # Row 1: Regions and Currency
             c1, c2 = st.columns(2)
             with c1:
@@ -153,10 +130,9 @@ if not raw_df.empty:
             # Row 2: Role (Explorer Only)
             sel_role = "All Roles"
             if st.session_state.page == "config_explorer":
-                st.write("") # Spacing
                 sel_role = st.selectbox("Specify Tech Stack Preference", TECH_ROLES)
             
-            st.markdown('<div style="margin: 30px 0; border-top: 1px solid #e2e8f0;"></div>', unsafe_allow_html=True)
+            st.write("") # Spacing
             
             # Action Buttons
             btn_label = "Search Live Market" if st.session_state.page == "config_explorer" else "Generate Market Report"
@@ -165,23 +141,22 @@ if not raw_df.empty:
                 st.session_state.page = "results_explorer" if st.session_state.page == "config_explorer" else "results_analytics"
                 st.rerun()
             
-            if st.button("← Cancel Journey", use_container_width=True):
+            # Back Button (Replaces Cancel Journey)
+            if st.button("← Back", use_container_width=True):
                 st.session_state.page = "landing"; st.rerun()
-            
-            st.markdown('</div>', unsafe_allow_html=True)
 
     # ─── VIEW 3: RESULTS (Explorer) ───
     elif st.session_state.page == "results_explorer":
         f = st.session_state.filters
         st.markdown(f"### 🔍 Explorer: {f['role']} in {', '.join(f['regions'])}")
-        if st.button("Adjust Parameters"): st.session_state.page = "config_explorer"; st.rerun()
+        if st.button("← Back"): st.session_state.page = "config_explorer"; st.rerun()
 
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         if f['role'] != "All Roles":
             res_df = res_df[res_df['title'].str.contains(f['role'], case=False)]
         
         if not res_df.empty:
-            st.markdown("#### ✨ Top Specialized Matches")
+            st.markdown("#### ✨ Premium Matches")
             top_3 = res_df.sort_values(by='salary_max', ascending=False).head(3)
             for _, row in top_3.iterrows():
                 flag = COUNTRY_FLAGS.get(row['country_code'], "📍")
@@ -189,25 +164,24 @@ if not raw_df.empty:
                 st.markdown(f"""
                     <div class="job-card">
                         <div style="flex:1;">
-                            <h2 style="margin:0; font-size:1.5rem; color:#0f172a;">{row['title']}</h2>
-                            <p style="color: #6366f1; font-weight: 700; margin: 8px 0; font-size:1rem;">{row['company']} • {flag} {row['location']} ({row['country_name']})</p>
-                            <p style="color: #64748b; font-size: 0.9rem; font-weight:600;">💰 Benchmark: {sal}</p>
+                            <h2 style="margin:0; font-size:1.5rem; color:white;">{row['title']}</h2>
+                            <p style="color: #818cf8; font-weight: 700; margin: 8px 0; font-size:1rem;">{row['company']} • {flag} {row['location']} ({row['country_name']})</p>
+                            <p style="color: #64748b; font-size: 0.9rem; font-weight:600;">Benchmark: {sal}</p>
                         </div>
-                        <a href="{row['url']}" target="_blank" class="apply-btn">Apply Here 🔗</a>
+                        <a href="{row['url']}" target="_blank" class="apply-btn">Apply Now</a>
                     </div>
                 """, unsafe_allow_html=True)
             
             st.divider()
-            st.markdown(f"#### Other {f['role']} Opportunities")
             for _, row in res_df.iloc[3:].iterrows():
                 flag = COUNTRY_FLAGS.get(row['country_code'], "📍")
                 st.markdown(f"""
-                    <div class="job-card" style="padding: 20px 35px;">
+                    <div class="job-card">
                         <div style="flex:1;">
-                            <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">{row['title']}</h3>
-                            <p style="color: #64748b; font-size: 0.9rem;">{row['company']} • {flag} {row['location']}</p>
+                            <h3 style="margin:0; font-size:1.2rem; color:white;">{row['title']}</h3>
+                            <p style="color: #818cf8; font-size: 0.9rem;">{row['company']} • {flag} {row['location']}</p>
                         </div>
-                        <a href="{row['url']}" target="_blank" class="apply-btn" style="padding:10px 25px; font-size:0.8rem;">View Role</a>
+                        <a href="{row['url']}" target="_blank" class="apply-btn" style="padding:10px 25px; font-size:0.8rem;">Apply</a>
                     </div>
                 """, unsafe_allow_html=True)
         else:
@@ -217,7 +191,7 @@ if not raw_df.empty:
     elif st.session_state.page == "results_analytics":
         f = st.session_state.filters
         st.markdown(f"### 📊 Intelligence Report: {', '.join(f['regions'])}")
-        if st.button("Adjust Parameters"): st.session_state.page = "config_analytics"; st.rerun()
+        if st.button("← Back"): st.session_state.page = "config_analytics"; st.rerun()
 
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         
@@ -229,10 +203,11 @@ if not raw_df.empty:
         k3.metric("Top Hiring Hub", res_df['country_name'].value_counts().idxmax() if not res_df.empty else "N/A")
 
         st.markdown("#### 💸 Salary Benchmarking")
-        fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", color_discrete_sequence=['#6366f1'])
+        fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_dark", color_discrete_sequence=['#6366f1'])
         fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig1, use_container_width=True)
         st.markdown('<div class="desc-box">Comparative analysis of regional pay scales. Outliers indicate specialized roles with higher market premiums.</div>', unsafe_allow_html=True)
 
 else:
-    st.error("Engine failure. Please check your Supabase secrets.")
+    st.error("Engine failure. Please check your connection.")
+                
