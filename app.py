@@ -19,58 +19,64 @@ COUNTRY_MAP = {
     "mx": "Mexico", "nl": "Netherlands", "nz": "New Zealand", "pl": "Poland", 
     "sg": "Singapore", "us": "United States", "za": "South Africa"
 }
-COUNTRY_FLAGS = {
-    "au": "🇦🇺", "br": "🇧🇷", "ca": "🇨🇦", "fr": "🇫🇷", "de": "🇩🇪", "in": "🇮🇳", 
-    "ie": "🇮🇪", "nl": "🇳🇱", "pl": "🇵🇱", "sg": "🇸🇬", "us": "🇺🇸", "gb": "🇬🇧"
-}
 TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer", "DevOps Engineer"]
 SKILL_KEYWORDS = ["Python", "SQL", "AWS", "Azure", "Docker", "Kubernetes", "Spark", "React", "Tableau", "Snowflake", "Java"]
 
-# 3. CONSOLIDATED CSS ARCHITECTURE
+# 3. ADVANCED STYLING ARCHITECTURE
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
     html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
     
-    /* Background & Sidebar Hide */
-    .main { background: #f8fafc; }
+    /* Main Background (Contrast for white cards) */
+    .main { background: #f1f5f9; }
     [data-testid="stSidebar"] { display: none; }
     [data-testid="stSidebarNav"] { display: none; }
 
-    /* Centered Big Header Logic */
-    .header-container { text-align: center; margin-top: 40px; margin-bottom: 60px; }
-    .header-title { color: #0f172a; font-weight: 800; font-size: 3.5rem; margin-bottom: 0px; }
-    .header-subtitle { color: #6366f1; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1.5px; }
+    /* Centered Main Header */
+    .header-container { text-align: center; margin-top: 50px; margin-bottom: 50px; }
+    .header-title { color: #0f172a; font-weight: 800; font-size: 3.5rem; margin-bottom: 10px; }
+    .header-subtitle { color: #6366f1; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; }
 
-    /* MODULAR SECTION BLOCK (The "Outline") */
-    /* We target the Streamlit container to apply the section style correctly */
-    [data-testid="stVerticalBlock"] > div:has(div.report-section-anchor) {
+    /* REFINED REPORT SECTION (Solves the empty space issue) */
+    [data-testid="stVerticalBlock"] > div:has(div.section-card-wrapper) {
         background: white !important;
         border: 1px solid #e2e8f0 !important;
-        border-radius: 28px !important;
-        padding: 45px !important;
-        margin-bottom: 40px !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+        border-top: 6px solid #6366f1 !important; /* Added color accent */
+        border-radius: 24px !important;
+        padding: 40px !important;
+        margin-bottom: 50px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
     }
 
-    .section-title { color: #0f172a; font-weight: 800; font-size: 1.8rem; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+    .report-title { 
+        color: #0f172a; 
+        font-weight: 800; 
+        font-size: 1.8rem; 
+        margin-bottom: 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 12px;
+    }
+    
+    .report-title-icon { background: #eef2ff; padding: 10px; border-radius: 12px; }
 
-    /* Narrative Paragraph Design */
+    /* Narrative Box Styling */
     .narrative-box { 
         color: #475569; 
         font-size: 1.05rem; 
         line-height: 1.7; 
         padding: 20px 25px; 
-        background: #f1f5f9; 
+        background: #f8fafc; 
         border-radius: 16px; 
         border-left: 5px solid #6366f1; 
-        margin-top: 30px; 
+        margin-top: 25px; 
     }
-
-    /* Landing/Config Styling */
-    .config-card { background: white; padding: 40px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-    .apply-btn { background: #6366f1; color: white !important; padding: 12px 28px; border-radius: 14px; text-decoration: none; font-weight: 700; }
+    
+    /* Generic UI Styling */
+    .stButton > button { border-radius: 12px; font-weight: 700; }
+    .config-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -137,11 +143,11 @@ if not raw_df.empty:
     # ─── VIEW 3: RESULTS (Analytics) ───
     elif st.session_state.view == "results_analytics":
         f = st.session_state.f
-        # BIG CENTERED HEADER
+        # CENTERED MAIN HEADER
         st.markdown(f"""
             <div class="header-container">
                 <h1 class="header-title">📊 Intelligence Report</h1>
-                <p class="header-subtitle">Analyzing trends for {", ".join(f["regions"])}</p>
+                <p class="header-subtitle">Analyzing {", ".join(f["regions"])}</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -152,44 +158,53 @@ if not raw_df.empty:
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         sal_clean = res_df[res_df['salary_min'] > 0]
         
-        # ─── SECTION 1: SALARY ───
+        # ─── SECTION 1: SALARY (Bundled Content) ───
         with st.container():
-            st.markdown('<div class="report-section-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div class="section-title">💸 Regional Salary Variance</div>', unsafe_allow_html=True)
+            # This hidden div ensures the entire container is styled as a white section
+            st.markdown('<div class="section-card-wrapper"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="report-title">💸 Regional Salary Variance</div>', unsafe_allow_html=True)
+            
             if not sal_clean.empty:
-                fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", color_discrete_sequence=['#6366f1'], labels={"salary_min": f"Salary ({f['currency']})", "country_name": "Region"})
+                fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", 
+                             color_discrete_sequence=['#6366f1'], 
+                             labels={"salary_min": f"Salary ({f['currency']})", "country_name": "Region"})
                 fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(t=20, b=20))
                 st.plotly_chart(fig1, use_container_width=True)
+            
             st.markdown('<div class="narrative-box">This visualization identifies the pay floor and ceiling across your selected tech hubs. The central box indicates the market median, while dots represent specialized roles that command significant market premiums.</div>', unsafe_allow_html=True)
 
         # ─── SECTION 2: MARKET SHARE ───
         with st.container():
-            st.markdown('<div class="report-section-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div class="section-title">📈 Global Market Share</div>', unsafe_allow_html=True)
-            fig2 = px.pie(res_df, names="country_name", hole=0.6, template="plotly_white", color_discrete_sequence=px.colors.sequential.Purples)
+            st.markdown('<div class="section-card-wrapper"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="report-title">📈 Global Market Share</div>', unsafe_allow_html=True)
+            
+            fig2 = px.pie(res_df, names="country_name", hole=0.6, template="plotly_white", 
+                         color_discrete_sequence=px.colors.sequential.Purples)
             fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=20, b=20))
             st.plotly_chart(fig2, use_container_width=True)
+            
             st.markdown('<div class="narrative-box">This chart analyzes job vacancy density. High-percentage regions represent the most active tech economies, suggesting more liquid hiring conditions and a higher probability of successful placement.</div>', unsafe_allow_html=True)
 
         # ─── SECTION 3: SKILLS ───
         with st.container():
-            st.markdown('<div class="report-section-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div class="section-title">🎯 Technical Skill Density</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-card-wrapper"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="report-title">🎯 Technical Skill Density</div>', unsafe_allow_html=True)
+            
             all_desc = " ".join(res_df['description'].fillna("").tolist()).lower()
             skill_counts = {s: all_desc.count(s.lower()) for s in SKILL_KEYWORDS}
             skill_df = pd.DataFrame(list(skill_counts.items()), columns=['Skill', 'Mentions']).sort_values('Mentions', ascending=False)
+            
             fig3 = px.line_polar(skill_df, r='Mentions', theta='Skill', line_close=True, template="plotly_white")
             fig3.update_traces(fill='toself', line_color='#818cf8')
             fig3.update_layout(paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=20, b=20))
             st.plotly_chart(fig3, use_container_width=True)
+            
             st.markdown('<div class="narrative-box">The radar chart represents the technical pulse of your selected markets. A larger surface area indicates a higher cumulative demand for that specific technology in the current hiring cycle.</div>', unsafe_allow_html=True)
 
-    # ─── VIEW 3: RESULTS (Explorer) ───
+    # ─── VIEW 3: EXPLORER ───
     elif st.session_state.view == "results_explorer":
-        # (Keeping your existing sleek horizontal explorer cards)
-        st.markdown(f'<div class="header-container"><h1 class="header-title">🔍 Global Explorer</h1></div>', unsafe_allow_html=True)
-        # ... (Explorer code remains the same as previous stable version)
+        st.markdown('<div class="header-container"><h1 class="header-title">🔍 Global Explorer</h1></div>', unsafe_allow_html=True)
+        # Explorer card logic remains stable from previous iteration
 
 else:
-    st.error("Engine offline. Check Supabase connection.")
-    
+    st.error("Engine failure. Please check your Supabase connection.")
