@@ -1,10 +1,4 @@
-Ah, it looks like you accidentally copied some of the chat's metadata text (`Viewed app.py:1-328`) along with the code!
 
-Please make sure you only copy the code starting from **`import streamlit as st`**.
-
-Here is the exact code again. If your chat interface has a **"Copy Code"** button in the top right corner of this block, use that—it will safely copy only the Python code:
-
-```python
 import streamlit as st
 import pandas as pd
 import plotly.express as px
