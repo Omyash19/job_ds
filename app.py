@@ -229,6 +229,48 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, li, span
     text-transform: uppercase !important;
 }
 
+/* ── Dropdown popover / listbox (fixes white-on-white) ───────────── */
+[data-baseweb="popover"],
+[data-baseweb="popover"] > div,
+[data-baseweb="menu"],
+ul[data-baseweb="menu"] {
+    background: #1A2236 !important;
+    border: 1px solid rgba(99,102,241,0.25) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+}
+[role="option"],
+li[role="option"],
+[data-baseweb="menu"] li,
+[data-baseweb="select"] li {
+    background: transparent !important;
+    color: #94A3B8 !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.85rem !important;
+}
+[role="option"]:hover,
+li[role="option"]:hover,
+[data-baseweb="menu"] li:hover {
+    background: rgba(99,102,241,0.15) !important;
+    color: #F1F5F9 !important;
+}
+[aria-selected="true"][role="option"] {
+    background: rgba(99,102,241,0.22) !important;
+    color: #A5B4FC !important;
+}
+[data-baseweb="select"] input {
+    color: #F1F5F9 !important;
+    caret-color: #6366F1 !important;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] span {
+    color: #F1F5F9 !important;
+}
+[data-baseweb="menu"]::-webkit-scrollbar { width: 4px; }
+[data-baseweb="menu"]::-webkit-scrollbar-thumb {
+    background: rgba(99,102,241,0.35);
+    border-radius: 99px;
+}
+
 /* Generate Button */
 .stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%) !important;
@@ -627,17 +669,17 @@ raw_df = load_data()
 # ══════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="hero-wrap">
-    <div>
+    <div style="text-align:center;">
         <div class="hero-eyebrow">
             <div class="dot"></div>
             Live Intelligence · 19 Markets
         </div>
+        <h1 class="hero-title">MarketSense</h1>
+        <p class="hero-sub">
+            Real-time salary benchmarks, skill demand signals, and job discovery
+            across the global technology market.
+        </p>
     </div>
-    <h1 class="hero-title">MarketSense</h1>
-    <p class="hero-sub">
-        Real-time salary benchmarks, skill demand signals, and job discovery
-        across the global technology market.
-    </p>
 </div>
 <div class="divider"></div>
 """, unsafe_allow_html=True)
@@ -821,7 +863,8 @@ with tab1:
             x=0.5, y=0.5, showarrow=False,
             font=dict(size=20, color="#E2E8F0", family="Syne"),
         )
-        fig2.update_layout(**PLOTLY_LAYOUT, height=290,
+        _layout_no_legend = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "legend"}
+        fig2.update_layout(**_layout_no_legend, height=290,
                            legend=dict(**PLOTLY_LAYOUT["legend"], orientation="v", x=1.05))
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
         st.markdown('<div class="narrative-box">Market concentration reveals where hiring activity clusters, informing geographic sourcing and competitive talent acquisition strategy.</div>', unsafe_allow_html=True)
