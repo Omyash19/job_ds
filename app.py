@@ -125,7 +125,7 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, li, span
 }
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.7); }
+    50%      { opacity: 0.5; transform: scale(0.7); }
 }
 .hero-title {
     font-family: 'Syne', sans-serif !important;
@@ -663,21 +663,31 @@ CHART_COLORS = ["#6366F1", "#8B5CF6", "#22D3EE", "#10B981", "#F59E0B", "#F43F5E"
 
 
 # ══════════════════════════════════════════════════════════════════════════
-#  5. DATA LAYER
-#  ↓ Swap the try-block with your real Supabase / SQLAlchemy call.
+#  5. DATA LAYER (LIVE DB EXTRACTION FIX)
 # ══════════════════════════════════════════════════════════════════════════
 @st.cache_data(ttl=3600)
 def load_data() -> pd.DataFrame:
     try:
-        engine = create_engine(st.secrets["DATABASE_URL"])
+        db_url = st.secrets["DATABASE_URL"]
+        # Essential Fix: SQLAlchemy 1.4+ requires postgresql:// instead of postgres://
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+            
+        engine = create_engine(db_url)
         df = pd.read_sql("SELECT * FROM tech_jobs", engine)
+        
+        if df.empty:
+            return pd.DataFrame()
+            
         df["salary_min"] = pd.to_numeric(df["salary_min"], errors="coerce").fillna(0)
         df["salary_max"] = pd.to_numeric(df["salary_max"], errors="coerce").fillna(0)
         df["country_code"] = df["country"].str.lower()
         df["country_name"] = df["country_code"].map(COUNTRY_MAP).fillna(df["country_code"].str.upper())
         df["avg_salary"] = (df["salary_min"] + df["salary_max"]) / 2
         return df
-    except Exception:
+    except Exception as e:
+        # Expose the error to the frontend so you aren't guessing why it's empty
+        st.error(f"🚨 Database Connection Error: {e}")
         return pd.DataFrame()
 
 
@@ -713,8 +723,8 @@ if raw_df.empty:
     st.markdown("""
     <div class="empty-state">
         <div class="icon">⚡</div>
-        <h3>Engine Disconnected</h3>
-        <p>Unable to reach the database. Check your DATABASE_URL secret and retry.</p>
+        <h3>Engine Disconnected or Table Empty</h3>
+        <p>Ensure your ETL pipeline has populated the 'tech_jobs' table and your DATABASE_URL secret is correct.</p>
     </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -729,7 +739,7 @@ with col_region:
     sel_regions = st.multiselect(
         "Target Regions",
         options=all_countries,
-        default=all_countries[:3],
+        default=all_countries[:3] if len(all_countries) >= 3 else all_countries,
         placeholder="Select one or more regions…",
     )
 
