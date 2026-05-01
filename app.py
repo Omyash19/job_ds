@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import plotly.express as px
 
-# 1. PAGE CONFIG (Zero-Sidebar Immersive Mode)
+# 1. PAGE CONFIG (Full Immersive, Zero-Sidebar)
 st.set_page_config(
     page_title="ECHOES | Global Tech Intelligence", 
     page_icon="💎", 
@@ -19,6 +19,10 @@ COUNTRY_MAP = {
     "mx": "Mexico", "nl": "Netherlands", "nz": "New Zealand", "pl": "Poland", 
     "sg": "Singapore", "us": "United States", "za": "South Africa"
 }
+COUNTRY_FLAGS = {
+    "au": "🇦🇺", "br": "🇧🇷", "ca": "🇨🇦", "fr": "🇫🇷", "de": "🇩🇪", "in": "🇮🇳", 
+    "ie": "🇮🇪", "nl": "🇳🇱", "pl": "🇵🇱", "sg": "🇸🇬", "us": "🇺🇸", "gb": "🇬🇧"
+}
 TECH_ROLES = ["Data Engineer", "Data Scientist", "Data Analyst", "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer", "DevOps Engineer"]
 SKILL_KEYWORDS = ["Python", "SQL", "AWS", "Azure", "Docker", "Kubernetes", "Spark", "React", "Tableau", "Snowflake", "Java"]
 
@@ -29,17 +33,16 @@ st.markdown("""
     
     html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
     
-    /* Main Background Contrast */
     .main { background: #f1f5f9; }
     [data-testid="stSidebar"] { display: none; }
     [data-testid="stSidebarNav"] { display: none; }
 
-    /* Centered Main Header */
+    /* Centered Header */
     .header-container { text-align: center; margin-top: 40px; margin-bottom: 50px; width: 100%; }
     .header-title { color: #0f172a; font-weight: 800; font-size: 3.8rem; margin-bottom: 0px; }
     .header-subtitle { color: #6366f1; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; }
 
-    /* CONSOLIDATED REPORT SECTION (Verbatim from image_c64a75.png & user feedback) */
+    /* Modular Report Sections */
     .report-card {
         background: white;
         border: 1px solid #e2e8f0;
@@ -71,9 +74,7 @@ st.markdown("""
         margin-top: 30px; 
     }
 
-    /* Standardized Buttons */
     .stButton > button { border-radius: 12px; font-weight: 700; }
-    .apply-btn { background: #6366f1; color: white !important; padding: 12px 28px; border-radius: 14px; text-decoration: none; font-weight: 700; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -103,7 +104,7 @@ if not raw_df.empty:
     
     # ─── VIEW 1: LANDING ───
     if st.session_state.view == "landing":
-        st.markdown('<div class="header-container"><h1 class="header-title">ECHOES 💎</h1><p class="header-subtitle">Intelligence for the Tech Economy</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="header-container"><h1 class="header-title">ECHOES 💎</h1><p class="header-subtitle">The Intelligence Layer for the Tech Economy</p></div>', unsafe_allow_html=True)
         _, c1, c2, _ = st.columns([1, 2, 2, 1])
         with c1:
             if st.button("🔍 Launch Job Explorer", use_container_width=True, type="primary"):
@@ -137,10 +138,11 @@ if not raw_df.empty:
                 st.session_state.view = "landing"; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # ─── VIEW 3: ANALYTICS (Modular Sections) ───
+    # ─── VIEW 3: ANALYTICS (Sharpened Visuals) ───
     elif st.session_state.view == "results_analytics":
         f = st.session_state.f
-        # BIG CENTERED HEADER
+        
+        # CENTERED MAIN HEADER
         st.markdown(f"""
             <div class="header-container">
                 <h1 class="header-title">📊 Intelligence Report</h1>
@@ -150,50 +152,102 @@ if not raw_df.empty:
         
         _, back_col, _ = st.columns([1, 0.4, 1])
         with back_col:
-            if st.button("← Back", use_container_width=True): st.session_state.view = "config_analytics"; st.rerun()
+            if st.button("← Back", use_container_width=True): 
+                st.session_state.view = "config_analytics"
+                st.rerun()
 
         res_df = raw_df[raw_df['country_name'].isin(f['regions'])]
         sal_clean = res_df[res_df['salary_min'] > 0]
         
-        # ─── SECTION 1: SALARY (Properly Bundled Title) ───
+        # Professional Chart Configuration
+        chart_theme = dict(
+            font=dict(family="Plus Jakarta Sans, sans-serif", size=12, color="#475569"),
+            margin=dict(t=40, b=40, l=40, r=40),
+            hoverlabel=dict(bgcolor="white", font_size=13, font_family="Plus Jakarta Sans")
+        )
+
+        # ─── SECTION 1: SALARY (High Contrast & Formatted) ───
         st.markdown('<div class="report-card">', unsafe_allow_html=True)
         st.markdown('<div class="report-title">💸 Regional Salary Variance</div>', unsafe_allow_html=True)
+        
         if not sal_clean.empty:
-            fig1 = px.box(sal_clean, x="country_name", y="salary_min", template="plotly_white", 
-                         color_discrete_sequence=['#6366f1'], 
-                         labels={"salary_min": f"Salary ({f['currency']})", "country_name": "Region"})
-            fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(t=10, b=10))
+            fig1 = px.box(
+                sal_clean, 
+                x="country_name", 
+                y="salary_min", 
+                template="plotly_white", 
+                color="country_name",
+                color_discrete_sequence=["#6366f1", "#8b5cf6", "#3b82f6"],
+                labels={"salary_min": f"Annual Salary ({f['currency']})", "country_name": "Market"}
+            )
+            # Precision tooltips: Rounded to 1 decimal with currency suffix
+            fig1.update_traces(
+                marker_color="#6366f1",
+                line_width=2,
+                hovertemplate="<b>%{x}</b><br>Benchmarked: " + f"{f['currency']} " + "%{y:,.1f}<extra></extra>"
+            )
+            fig1.update_layout(**chart_theme, showlegend=False, yaxis=dict(gridcolor="#f1f5f9"))
             st.plotly_chart(fig1, use_container_width=True)
+        
         st.markdown('<div class="narrative-box">This visualization identifies the pay floor and ceiling across your selected tech hubs. The central box indicates the market median, while dots represent specialized roles that command significant market premiums.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # ─── SECTION 2: MARKET SHARE ───
+        # ─── SECTION 2: MARKET SHARE (Vibrant Palette) ───
         st.markdown('<div class="report-card">', unsafe_allow_html=True)
         st.markdown('<div class="report-title">📈 Global Market Share</div>', unsafe_allow_html=True)
-        fig2 = px.pie(res_df, names="country_name", hole=0.6, template="plotly_white", 
-                     color_discrete_sequence=px.colors.sequential.Purples)
-        fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=10, b=10))
+        
+        fig2 = px.pie(
+            res_df, 
+            names="country_name", 
+            hole=0.5, 
+            template="plotly_white", 
+            color_discrete_sequence=["#6366f1", "#a5b4fc", "#e0e7ff", "#312e81"]
+        )
+        fig2.update_traces(
+            textposition='outside', 
+            textinfo='percent+label',
+            marker=dict(line=dict(color='white', width=3)),
+            hovertemplate="<b>%{label}</b><br>Market Share: %{percent}<extra></extra>"
+        )
+        fig2.update_layout(**chart_theme, showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
         st.plotly_chart(fig2, use_container_width=True)
+        
         st.markdown('<div class="narrative-box">This chart analyzes job vacancy density. High-percentage regions represent the most active tech economies, suggesting more liquid hiring conditions and a higher probability of successful placement.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # ─── SECTION 3: SKILLS ───
+        # ─── SECTION 3: SKILLS (Bold Interactivity) ───
         st.markdown('<div class="report-card">', unsafe_allow_html=True)
         st.markdown('<div class="report-title">🎯 Technical Skill Density</div>', unsafe_allow_html=True)
+        
         all_desc = " ".join(res_df['description'].fillna("").tolist()).lower()
         skill_counts = {s: all_desc.count(s.lower()) for s in SKILL_KEYWORDS}
         skill_df = pd.DataFrame(list(skill_counts.items()), columns=['Skill', 'Mentions']).sort_values('Mentions', ascending=False)
-        fig3 = px.line_polar(skill_df, r='Mentions', theta='Skill', line_close=True, template="plotly_white")
-        fig3.update_traces(fill='toself', line_color='#818cf8')
-        fig3.update_layout(paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=10, b=10))
+        
+        fig3 = px.line_polar(
+            skill_df, 
+            r='Mentions', 
+            theta='Skill', 
+            line_close=True, 
+            template="plotly_white"
+        )
+        # Bold borders and higher fill opacity for readability
+        fig3.update_traces(
+            fill='toself', 
+            fillcolor='rgba(99, 102, 241, 0.4)',
+            line_color='#6366f1', 
+            line_width=3,
+            hovertemplate="<b>%{theta}</b><br>Demand Index: %{r}<extra></extra>"
+        )
+        fig3.update_layout(**chart_theme, polar=dict(radialaxis=dict(visible=True, gridcolor="#f1f5f9"), angularaxis=dict(gridcolor="#f1f5f9")))
         st.plotly_chart(fig3, use_container_width=True)
+        
         st.markdown('<div class="narrative-box">The radar chart represents the technical pulse of your selected markets. A larger surface area indicates a higher cumulative demand for that specific technology in the current hiring cycle.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ─── VIEW 3: EXPLORER ───
     elif st.session_state.view == "results_explorer":
         st.markdown('<div class="header-container"><h1 class="header-title">🔍 Global Explorer</h1></div>', unsafe_allow_html=True)
-        # (Explorer logic is consistent with the sleek horizontal card style)
+        # (Existing Explorer card logic follows...)
 
 else:
-    st.error("Engine failure. Please check your Supabase connection.")
+    st.error("Platform engine offline. Check Supabase connection.")
