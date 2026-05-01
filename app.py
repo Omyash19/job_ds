@@ -980,9 +980,8 @@ with tab1:
         st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
         st.markdown("</div>", unsafe_allow_html=True)
 
-
 # ─────────────────────────────────────────────────────────────────────────
-#  TAB 2: LIVE JOB EXPLORER
+#  TAB 2: LIVE JOB EXPLORER (CODE BLOCK FIX)
 # ─────────────────────────────────────────────────────────────────────────
 with tab2:
     st.markdown(f"""
@@ -995,38 +994,32 @@ with tab2:
         st.markdown('<div class="empty-state"><div class="icon">🔍</div><h3>No roles match your filters</h3></div>', unsafe_allow_html=True)
     else:
         for _, row in res_df.iterrows():
-            flag   = COUNTRY_FLAGS.get(str(row.get("country_code", "")).lower(), "📍")
-            co_ini = "".join(w[0] for w in str(row.get("company", "?")).split()[:2]).upper()
-
+            flag = COUNTRY_FLAGS.get(str(row.get("country_code", "")).lower(), "📍")
+            
+            # Format salary components into a single line to prevent markdown code-block triggers
             if row["salary_min"] > 0:
                 s_min = fmt_salary(row["salary_min"] * rate)
                 s_max = fmt_salary(row["salary_max"] * rate)
-                salary_html = f"""
-                <div class="salary-pill">
-                    <div class="salary-label">Benchmark</div>
-                    <div class="salary-value">{s_min} — {s_max}</div>
-                </div>"""
+                salary_html = f'<div class="salary-pill"><div class="salary-label">Benchmark</div><div class="salary-value">{s_min} — {s_max}</div></div>'
             else:
-                salary_html = """
-                <div class="salary-pill salary-na">
-                    <div class="salary-label">Salary</div>
-                    <div class="salary-value">On Application</div>
-                </div>"""
+                salary_html = '<div class="salary-pill salary-na"><div class="salary-label">Salary</div><div class="salary-value">On Application</div></div>'
 
-            st.markdown(f"""
-            <div class="job-card">
-                <div class="job-logo">{flag}</div>
-                <div class="job-info">
-                    <div class="job-title">{row.get('title','Unknown Role')}</div>
-                    <div class="job-meta">{row.get('company','—')}</div>
-                    <div class="job-location">{row.get('location','—')} · {row.get('country_name', '')}</div>
-                </div>
-                {salary_html}
-                <a href="{row.get('url','#')}" target="_blank" class="apply-link">
-                    Apply Now ↗
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
+            # Build the card as a single-line string to ensure perfect rendering
+            card_html = (
+                f'<div class="job-card">'
+                f'<div class="job-logo">{flag}</div>'
+                f'<div class="job-info">'
+                f'<div class="job-title">{row.get("title","Unknown Role")}</div>'
+                f'<div class="job-meta">{row.get("company","—")}</div>'
+                f'<div class="job-location">{row.get("location","—")} · {row.get("country_name", "")}</div>'
+                f'</div>'
+                f'{salary_html}'
+                f'<a href="{row.get("url","#")}" target="_blank" class="apply-link">Apply Now ↗</a>'
+                f'</div>'
+            )
+            
+            st.markdown(card_html, unsafe_allow_html=True)
+
 
 # ── FOOTER ────────────────────────────────────────────────────────────────
 st.markdown("""
