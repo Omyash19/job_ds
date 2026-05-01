@@ -95,6 +95,8 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, li, span
 ══════════════════════════════════════════════════════════════════ */
 .hero-wrap {
     position: relative;
+    width: 100%;
+    display: block;
     padding: 56px 0 44px;
     text-align: center;
     overflow: hidden;
@@ -270,6 +272,23 @@ li[role="option"]:hover,
     background: rgba(99,102,241,0.35);
     border-radius: 99px;
 }
+/* ── DEEP portal overrides: target every nested div/li inside popover ── */
+[data-baseweb="popover"] [data-baseweb="block"],
+[data-baseweb="popover"] [data-baseweb="block"] > div,
+[data-baseweb="popover"] ul,
+[data-baseweb="popover"] li {
+    background-color: #1A2236 !important;
+    color: #94A3B8 !important;
+}
+[data-baseweb="popover"] li:hover,
+[data-baseweb="popover"] li[aria-selected="true"] {
+    background-color: rgba(99,102,241,0.2) !important;
+    color: #E2E8F0 !important;
+}
+/* Override any inline style="background: white" Streamlit injects */
+[data-baseweb="popover"] * { color: #94A3B8; }
+[data-baseweb="popover"] [role="option"] { background: #1A2236 !important; }
+[data-baseweb="popover"] [role="option"]:hover { background: rgba(99,102,241,0.18) !important; color: #F1F5F9 !important; }
 
 /* Generate Button */
 .stButton > button[kind="primary"] {
@@ -669,13 +688,13 @@ raw_df = load_data()
 # ══════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="hero-wrap">
-    <div style="text-align:center;">
-        <div class="hero-eyebrow">
+    <div style="display:block; width:100%; text-align:center;">
+        <div class="hero-eyebrow" style="display:inline-flex;">
             <div class="dot"></div>
             Live Intelligence · 19 Markets
         </div>
-        <h1 class="hero-title">MarketSense</h1>
-        <p class="hero-sub">
+        <h1 class="hero-title" style="display:block;">MarketSense</h1>
+        <p class="hero-sub" style="display:block; margin-left:auto; margin-right:auto;">
             Real-time salary benchmarks, skill demand signals, and job discovery
             across the global technology market.
         </p>
@@ -945,8 +964,9 @@ with tab1:
             marker_line_width=0,
         )
         fig4.update_layout(**PLOTLY_LAYOUT, height=340, coloraxis_showscale=False)
+        _axis_no_tick = {k: v for k, v in PLOTLY_AXIS.items() if k != "tickfont"}
         fig4.update_xaxes(**PLOTLY_AXIS)
-        fig4.update_yaxes(**PLOTLY_AXIS, tickfont=dict(color="#94A3B8", size=11))
+        fig4.update_yaxes(**_axis_no_tick, tickfont=dict(color="#94A3B8", size=11))
         st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
         st.markdown("</div>", unsafe_allow_html=True)
 
